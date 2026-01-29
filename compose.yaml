@@ -9,7 +9,7 @@ services:
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
-            - '${APP_PORT:-80}:80'
+            - "8080:80"
             - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
         environment:
             WWWUSER: '${WWWUSER}'
@@ -18,22 +18,23 @@ services:
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
         volumes:
-            - '.:/var/www/html'
+            - '.:/var/www/html:cached'
         networks:
             - sail
         depends_on:
             - pgsql
     pgsql:
         image: 'postgres:18-alpine'
+        
         ports:
-            - '${FORWARD_DB_PORT:-5432}:5432'
+            - '5432:5432'
         environment:
             PGPASSWORD: '${DB_PASSWORD:-secret}'
-            POSTGRES_DB: '${DB_DATABASE}'
-            POSTGRES_USER: '${DB_USERNAME}'
-            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+            POSTGRES_DB: 'linkup'
+            POSTGRES_USER: 'postgres'
+            POSTGRES_PASSWORD: 'root'
         volumes:
-            - 'sail-pgsql:/var/lib/postgresql'
+            - 'sail-pgsql:/var/lib/postgresql/data'
             - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
             - sail
