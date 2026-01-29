@@ -8,15 +8,6 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
             
-
-            <div>
-                {{-- $user = {{ __('users') }} --}}
-                    {{-- @forelse ($profiles as $us )
-                            {{ $us -> bio }}
-                            @empty
-                            <p>No users found</p>
-                    @endforelse --}}
-            </div>
             <!-- Friend Requests Section -->
             @if(isset($pendingRequests) && $pendingRequests->count() > 0)
             <div class="bg-indigo-50 dark:bg-indigo-900/20 overflow-hidden shadow-sm sm:rounded-lg border border-indigo-100 dark:border-indigo-800">

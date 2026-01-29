@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('profiles', function (Blueprint $table) {
+        Schema::create('friends', function (Blueprint $table) {
             $table->id();
-            $table->string('bio')->nullable(); // Bio text
-            $table->string('avatar')->nullable(); // Avatar image path
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade'); // Link to users
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('friend_id')->constrained('users')->cascadeOnDelete();
+            $table->string('status')->default('pending'); // pending | accepted
             $table->timestamps();
+
+            $table->unique(['user_id', 'friend_id']); // prevent duplicates
         });
     }
 
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('profiles');
+        Schema::dropIfExists('friends');
     }
 };
