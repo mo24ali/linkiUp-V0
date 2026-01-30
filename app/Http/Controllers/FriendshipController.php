@@ -19,12 +19,13 @@ class FriendshipController extends Controller
     public function addPage()
     {
         $users = User::where('id', '!=', auth()->id())->get();
-        return view('friends.add', compact('users'));
+            return view('friends.add', compact('users'));
     }
 
     public function add($id)
     {
         $user = auth()->user();
+        
 
         if ($user->id == $id) {
             return back()->with('error', "You can't add yourself.");

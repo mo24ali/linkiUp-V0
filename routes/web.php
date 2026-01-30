@@ -5,13 +5,14 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FriendshipController;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/dashboard', function () {
-    $users = DB::table('users')->get();
+    $currentUserId = Auth::id();
+    $users = DB::table('users')->where('id', '!=', $currentUserId)->get();
     return view('dashboard', [
         'users' => $users
     ]);

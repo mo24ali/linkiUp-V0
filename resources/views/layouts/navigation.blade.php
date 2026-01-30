@@ -43,11 +43,6 @@
                     </svg>
                 </button>
 
-                <!-- Post Button -->
-                <a href="#" class="bg-[#1d9bf0] text-white px-4 py-2 rounded-full font-bold hover:bg-[#1a8cd8] transition-colors text-sm">
-                    Post
-                </a>
-
                 <!-- Settings Dropdown -->
                 <div class="hidden sm:block">
                     <x-dropdown align="right" width="48">
