@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
 // userController routes
 
 
+
 Route::get('/users', [UserController::class, 'index'])
     ->name('users.index')
     ->middleware('auth');
