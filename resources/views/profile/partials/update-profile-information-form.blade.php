@@ -58,26 +58,26 @@
             <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
         </div>
 
-        <!-- Pseudo -->
+        <!-- Name (Pseudo) -->
         <div>
-            <x-input-label for="pseudo" :value="__('Pseudo')" />
-            <x-text-input id="pseudo" name="pseudo" type="text" class="mt-1 block w-full" :value="old('pseudo', $user->pseudo)" required autofocus autocomplete="nickname" />
-            <x-input-error class="mt-2" :messages="$errors->get('pseudo')" />
+            <x-input-label for="name" :value="__('Pseudo')" />
+            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)"
+                required autofocus autocomplete="nickname" />
+            <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <!-- First Name -->
         <div>
-            <x-input-label for="first_name" :value="__('First Name')" />
-            <x-text-input id="first_name" name="first_name" type="text" class="mt-1 block w-full"
-                :value="old('first_name', $user->first_name)" required autocomplete="given-name" />
-            <x-input-error class="mt-2" :messages="$errors->get('first_name')" />
+            <x-input-label for="firstname" :value="__('First Name')" />
+            <x-text-input id="firstname" name="firstname" type="text" class="mt-1 block w-full" :value="old('firstname', $user->firstname)" autocomplete="given-name" />
+            <x-input-error class="mt-2" :messages="$errors->get('firstname')" />
         </div>
 
         <!-- Last Name -->
         <div>
-            <x-input-label for="last_name" :value="__('Last Name')" />
-            <x-text-input id="last_name" name="last_name" type="text" class="mt-1 block w-full" :value="old('last_name', $user->last_name)" required autocomplete="family-name" />
-            <x-input-error class="mt-2" :messages="$errors->get('last_name')" />
+            <x-input-label for="lastname" :value="__('Last Name')" />
+            <x-text-input id="lastname" name="lastname" type="text" class="mt-1 block w-full" :value="old('lastname', $user->lastname)" autocomplete="family-name" />
+            <x-input-error class="mt-2" :messages="$errors->get('lastname')" />
         </div>
 
         <!-- Bio -->
@@ -85,7 +85,7 @@
             <x-input-label for="bio" :value="__('Bio')" />
             <textarea id="bio" name="bio"
                 class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                rows="3">{{ old('bio', $user->bio) }}</textarea>
+                rows="3">{{ old('bio', $user->profile->bio ?? '') }}</textarea>
             <x-input-error class="mt-2" :messages="$errors->get('bio')" />
         </div>
 

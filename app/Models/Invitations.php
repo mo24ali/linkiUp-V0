@@ -12,7 +12,7 @@ class Invitations extends Model
 
 
 
-    public function Invitaions(){
-        return $this->belongsToMany()
+    public function users(){
+        return $this->belongsToMany('users');
     }
 }

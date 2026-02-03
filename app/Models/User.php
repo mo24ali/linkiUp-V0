@@ -12,7 +12,7 @@ use Spatie\Sluggable\SlugOptions;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasSlug;
 
     /**
      * The attributes that are mass assignable.
@@ -21,9 +21,22 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'firstname',
+        'lastname',
         'email',
         'password',
+        'slug',
     ];
+
+    /**
+     * Get the options for generating the slug.
+     */
+    public function getSlugOptions(): SlugOptions
+    {
+        return SlugOptions::create()
+            ->generateSlugsFrom('name')
+            ->saveSlugsTo('slug');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -47,16 +60,35 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'owner_id');
+    }
+
     public function friends()
     {
-        return $this->belongsToMany(User::class, 'friends', 'user_id', 'friend_id')
+        return $this->belongsToMany(User::class, 'friendships', 'user_id', 'friend_id')
             ->withPivot('status')
             ->withTimestamps();
     }
 
     public function friendsOf()
     {
-        return $this->belongsToMany(User::class, 'friends', 'friend_id', 'user_id')
+        return $this->belongsToMany(User::class, 'friendships', 'friend_id', 'user_id')
             ->withPivot('status')
             ->withTimestamps();
     }
@@ -73,10 +105,22 @@ class User extends Authenticatable
 
     public function acceptedFriends()
     {
-        
         $friends = $this->friends()->wherePivot('status', 'accepted')->get();
         $friendsOf = $this->friendsOf()->wherePivot('status', 'accepted')->get();
         return $friends->merge($friendsOf);
     }
-    
+
+    public function reactions()
+    {
+        return $this->hasMany(Reaction::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+    // public static function find(int $id){
+    //     $user =  DB::table('users')->where('id','=',$id)->get(); 
+    //     return $user;
+    // }
 }

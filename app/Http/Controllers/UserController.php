@@ -8,17 +8,24 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = $request->input('query');
+        $users = [];
 
-        return view('findFriends.index');
+        if ($query) {
+            $users = \App\Models\User::where('name', 'LIKE', "%{$query}%")
+                ->orWhere('email', 'LIKE', "%{$query}%")
+                ->where('id', '!=', auth()->id())
+                ->get();
+        }
+
+        return view('users.index', compact('users', 'query'));
     }
-    public function show()
+
+    public function show(\App\Models\User $user)
     {
-        $user = DB::table('users')->where('name', 'test')->first();
-        return view('profile.show', [
-            'user' => $user
-        ]);
+        return redirect()->route('profile.show', $user->id);
     }
-    
+
 }

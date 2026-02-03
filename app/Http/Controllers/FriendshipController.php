@@ -12,7 +12,7 @@ class FriendshipController extends Controller
         $pendingRequests = $user->receivedFriendRequests()->get();
         $friends = $user->acceptedFriends();
 
-        return view('friends.index', compact('pendingRequests', 'friends'));
+        return view('friends.index', compact('pendingRequests'));
     }
 
     public function addPage()
@@ -34,11 +34,11 @@ class FriendshipController extends Controller
             return back()->with('error', "You can't add yourself.");
         }
 
-        if ($user->friends()->where('friend_id', $id)->exists()) {
+        if ($user->friendship()->where('friend_id', $id)->exists()) {
             return back()->with('error', 'Already friends or request already sent.');
         }
 
-        $user->friends()->attach($id, [
+        $user->friendships()->attach($id, [
             'status' => 'pending'
         ]);
 
