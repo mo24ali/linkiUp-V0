@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MessagerieController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -13,8 +14,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $currentUserId = Auth::id();
     $users = DB::table('users')->where('id', '!=', $currentUserId)->get();
+    $posts = DB::table('posts')->get();
     return view('dashboard', [
-        'users' => $users
+        'users' => $users,
+        'posts'=> $posts
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -45,6 +48,10 @@ Route::get('/friends', [FriendshipController::class, 'index'])
 // add a friend
 Route::get('/friends/add', [FriendshipController::class, 'addPage'])->name('friends.page');
 Route::post('/friends/add/{id}', [FriendshipController::class, 'add'])->name('friends.add');
+Route::post('/friends/accept/{id}', [FriendshipController::class, 'accept'])->name('friends.accept');
+Route::post('/friends/reject/{id}', [FriendshipController::class, 'reject'])->name('friends.reject');
+
+Route::get('/messagerie/index',[MessagerieController::class , 'show']);
 
 
 require __DIR__ . '/auth.php';

@@ -1,7 +1,7 @@
 
 
     <div>
-            {{ $user->name }}
+            {{ $user->username }}
     </div>
 
 

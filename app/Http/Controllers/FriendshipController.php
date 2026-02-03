@@ -2,30 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
 class FriendshipController extends Controller
 {
     public function index()
     {
-        $users = DB::table('users')->get();
-        $profiles = DB::table('profiles')->get();
+        $user = auth()->user();
+        $pendingRequests = $user->receivedFriendRequests()->get();
+        $friends = $user->acceptedFriends();
 
-        return view('friends.index', compact('users', 'profiles'));
+        return view('friends.index', compact('pendingRequests', 'friends'));
     }
 
     public function addPage()
     {
-        $users = User::where('id', '!=', auth()->id())->get();
-            return view('friends.add', compact('users'));
+        $suggestions = User::where('id', '!=', auth()->id())
+            ->inRandomOrder()
+            ->limit(9)
+            ->get();
+
+        return view('friends.add', compact('suggestions'));
     }
 
     public function add($id)
     {
         $user = auth()->user();
-        
+
 
         if ($user->id == $id) {
             return back()->with('error', "You can't add yourself.");
@@ -40,5 +43,19 @@ class FriendshipController extends Controller
         ]);
 
         return back()->with('success', 'Friend request sent!');
+    }
+
+    public function accept($id)
+    {
+        $user = auth()->user();
+        $user->receivedFriendRequests()->updateExistingPivot($id, ['status' => 'accepted']);
+        return back()->with('success', 'Friend request accepted!');
+    }
+
+    public function reject($id)
+    {
+        $user = auth()->user();
+        $user->receivedFriendRequests()->detach($id);
+        return back()->with('success', 'Friend request declined.');
     }
 }

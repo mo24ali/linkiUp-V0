@@ -10,12 +10,6 @@
             
 
             <div>
-                {{-- $user = {{ __('users') }} --}}
-                    {{-- @forelse ($profiles as $us )
-                            {{ $us -> bio }}
-                            @empty
-                            <p>No users found</p>
-                    @endforelse --}}
             </div>
             <!-- Friend Requests Section -->
             @if(isset($pendingRequests) && $pendingRequests->count() > 0)
@@ -32,30 +26,32 @@
                             <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex items-center justify-between border border-gray-100 dark:border-gray-700">
                                 <div class="flex items-center space-x-3">
                                     <div class="flex-shrink-0">
-                                        @if($request->sender->avatar)
-                                            <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $request->sender->avatar) }}" alt="{{ $request->sender->name }}">
-                                        @else
-                                            <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold">
-                                                {{ substr($request->sender->name, 0, 1) }}
-                                            </div>
-                                        @endif
+                                        <img class="h-10 w-10 rounded-full object-cover" 
+                                             src="{{ $request->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($request->name) . '&color=7F9CF5&background=EBF4FF' }}" 
+                                             alt="{{ $request->name }}">
                                     </div>
                                     <div class="min-w-0">
                                         <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                            {{ $request->sender->name }}
+                                            {{ $request->name }}
                                         </p>
                                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                            @ {{ $request->sender->pseudo }}
+                                            {{ $request->email }}
                                         </p>
                                     </div>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <button class="p-2 bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 rounded-full transition-colors" title="Accept">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    </button>
-                                    <button class="p-2 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-full transition-colors" title="Decline">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
+                                    <form action="{{ route('friends.accept', $request->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="p-2 bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 rounded-full transition-colors" title="Accept">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('friends.reject', $request->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="p-2 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-full transition-colors" title="Decline">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         @endforeach
@@ -115,7 +111,7 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No friends yet</h3>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by searching for people.</p>
                             <div class="mt-6">
-                                <a href="{{ route('users.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <a href="{{ route('friends.page') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                                     Find People
                                 </a>

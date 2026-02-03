@@ -14,6 +14,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 
 <body class="font-sans antialiased bg-black text-[#e7e9ea]">
@@ -24,18 +25,17 @@
         @isset($header)
             <header class="bg-black border-b border-[#2f3336] sticky top-0 z-10 backdrop-blur-sm bg-black/95">
                 <div class="max-w-7xl mx-auto px-4 py-3">
-                    <h1 class="text-xl font-bold">{{ $header }}</h1>
+                    {{ $header }}
                 </div>
             </header>
         @endisset
-        @livewireStyles
-        @livewireScripts
 
         <!-- Page Content -->
         <main class="max-w-7xl mx-auto px-4 py-6">
             {{ $slot }}
         </main>
     </div>
+    @livewireScripts
 </body>
 
 </html>
