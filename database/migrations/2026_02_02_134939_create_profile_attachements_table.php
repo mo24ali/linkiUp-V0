@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('profile_attachements', function (Blueprint $table) {
             $table->id();
+            $table->string('avatar');
+            $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });
     }

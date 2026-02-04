@@ -20,7 +20,7 @@
                         class="absolute -inset-1 bg-gradient-to-r from-[#1d9bf0] to-[#f91880] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
                     </div>
                     <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? asset('storage/' . auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
-                        class="relative w-24 h-24 rounded-full mx-auto border-2 border-black object-cover">
+                         class="w-32 h-32 rounded-full object-cover shadow-lg border-2 border-white">
                 </div>
                 <h3 class="font-bold text-xl text-[#e7e9ea]">{{ auth()->user()->firstname }}
                     {{ auth()->user()->lastname }}</h3>
@@ -76,13 +76,12 @@
                 <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="flex gap-4">
-                        <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? asset('storage/' . auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
-                            class="w-12 h-12 rounded-full border border-[#2f3336]">
+                        <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? asset(auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
+                            class="w-12 h-12 rounded-full object-cover border">
                         <div class="flex-1">
                             <textarea name="content" placeholder="What's happening?"
                                 class="w-full bg-transparent text-xl text-[#e7e9ea] border-none focus:ring-0 placeholder-[#71767b] resize-none"
                                 rows="3" required></textarea>
-
                             <div id="image-preview" class="mt-4 hidden relative">
                                 <img src="" class="rounded-2xl max-h-80 w-full object-cover border border-[#2f3336]">
                                 <button type="button" onclick="clearImage()"

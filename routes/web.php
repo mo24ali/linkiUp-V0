@@ -24,15 +24,16 @@ Route::middleware('auth')->group(function () {
 
     // Posts
     Route::resource('posts', App\Http\Controllers\PostController::class)->except(['index', 'create', 'show']);
+    Route::post('/posts/{post}', [PostController::class,'destroy']);
 
     // Comments
     Route::post('/posts/{post}/comments', [App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
 
-    // Reactions
+    // // Reactions
     Route::post('/posts/{post}/react', [App\Http\Controllers\ReactionController::class, 'toggle'])->name('posts.react');
 
-    // Admin Moderation
+    // // Admin Moderation
     Route::get('/admin', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.index');
     Route::post('/admin/posts/{post}/approve', [App\Http\Controllers\AdminController::class, 'approve'])->name('admin.approve');
     Route::post('/admin/posts/{post}/reject', [App\Http\Controllers\AdminController::class, 'reject'])->name('admin.reject');

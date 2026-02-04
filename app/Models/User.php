@@ -119,8 +119,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class);
     }
-    // public static function find(int $id){
-    //     $user =  DB::table('users')->where('id','=',$id)->get(); 
-    //     return $user;
-    // }
+    public static function friendship(){
+        
+    }
 }
