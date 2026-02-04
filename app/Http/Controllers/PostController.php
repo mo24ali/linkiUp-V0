@@ -14,13 +14,12 @@ class PostController extends Controller
         $friendIds = $user->acceptedFriends()->pluck('id')->toArray();
         $friendIds[] = $user->id;
 
-        $posts = Post::whereIn('owner_id', $friendIds)
-            ->where('status', 'published')
-            ->with(['user', 'comments.user', 'likes'])
-            ->latest()
-            ->paginate(10);
+         $posts = Post::where('status', 'published')
+        ->with(['user', 'comments.user', 'likes'])
+        ->latest()
+        ->paginate(10);
 
-        return view('dashboard', compact('posts'));
+    return view('dashboard', compact('posts'));
     }
 
     public function store(Request $request)
@@ -68,7 +67,7 @@ class PostController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $post->content = $request->content;
+        // $post->content = $request->content;
 
         if ($request->hasFile('image')) {
             if ($post->image) {

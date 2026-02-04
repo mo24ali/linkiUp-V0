@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     // Posts
     Route::resource('posts', App\Http\Controllers\PostController::class)->except(['index', 'create', 'show']);
     Route::post('/posts/{post}', [PostController::class,'destroy']);
+    Route::post('/posts/{post}', [PostController::class,'update']);
 
     // Comments
     Route::post('/posts/{post}/comments', [App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');

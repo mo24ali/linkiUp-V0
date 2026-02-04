@@ -1,3 +1,6 @@
+{{-- dd(Storage::url('storage/app/public/avatar' . $user->profile->avatar)); --}}
+
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -19,7 +22,7 @@
                     <div
                         class="absolute -inset-1 bg-gradient-to-r from-[#1d9bf0] to-[#f91880] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
                     </div>
-                    <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? asset('storage/' . auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
+                    <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? Storage::url( auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
                         class="w-32 h-32 rounded-full object-cover shadow-lg border-2 border-white">
                 </div>
                 <h3 class="font-bold text-xl text-[#e7e9ea]">{{ auth()->user()->firstname }}
@@ -76,7 +79,7 @@
                 <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="flex gap-4">
-                        <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? asset(auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
+                        <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? Storage::url(auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
                             class="w-12 h-12 rounded-full object-cover border">
                         <div class="flex-1">
                             <textarea name="content" placeholder="What's happening?"
@@ -128,7 +131,7 @@
                         <div class="flex justify-between items-start">
                             <div class="flex items-center gap-3">
                                 <div class="relative">
-                                    <img src="{{ $post->user->profile && $post->user->profile->avatar ? asset('storage/' . $post->user->profile->avatar) : 'https://i.pravatar.cc/48?u=' . $post->user->id }}"
+                                    <img src="{{ $post->user->profile && $post->user->profile->avatar ? Storage::url( $post->user->profile->avatar) : 'https://i.pravatar.cc/48?u=' . $post->user->id }}"
                                         class="w-12 h-12 rounded-full border border-[#2f3336] object-cover">
                                     <div
                                         class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-black bg-green-500">
@@ -171,7 +174,7 @@
 
                                         </form>
                                         <form action="{{ route('posts.update', $post) }}" method="POST">
-                                            @csrf @method('UPDATE')
+                                            @csrf @method('PUT')
                                             <x-dropdown-link href="#"
                                                 onclick="event.preventDefault(); this.closest('form').submit();"
                                                 class="text-green-500">
@@ -190,7 +193,7 @@
 
                     @if ($post->image)
                         <div class="px-5 pb-4">
-                            <img src="{{ asset('storage/' . $post->image) }}"
+                            <img src="{{ Storage::url( $post->image) }}"
                                 class="rounded-2xl w-full max-h-[512px] object-cover border border-[#2f3336]">
                         </div>
                     @endif
@@ -241,7 +244,7 @@
                         <div class="space-y-4">
                             @foreach ($post->comments as $comment)
                                 <div class="flex items-start gap-3">
-                                    <img src="{{ $comment->user->profile && $comment->user->profile->avatar ? asset('storage/' . $comment->user->profile->avatar) : 'https://i.pravatar.cc/32?u=' . $comment->user->id }}"
+                                    <img src="{{ $comment->user->profile && $comment->user->profile->avatar ? Storage::url( $comment->user->profile->avatar) : 'https://i.pravatar.cc/32?u=' . $comment->user->id }}"
                                         class="w-8 h-8 rounded-full border border-[#2f3336]">
                                     <div class="flex-1 bg-[#202327] rounded-2xl px-4 py-2">
                                         <div class="flex items-center justify-between">
@@ -257,7 +260,7 @@
                             <form action="{{ route('comments.store', $post) }}" method="POST"
                                 class="flex items-center gap-3 mt-4">
                                 @csrf
-                                <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? asset('storage/' . auth()->user()->profile->avatar) : 'https://i.pravatar.cc/32?u=' . auth()->id() }}"
+                                <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? Storage::url( auth()->user()->profile->avatar) : 'https://i.pravatar.cc/32?u=' . auth()->id() }}"
                                     class="w-8 h-8 rounded-full border border-[#2f3336]">
                                 <input type="text" name="content" placeholder="Post your reply"
                                     class="flex-1 bg-[#202327] border-none rounded-full px-4 py-2 text-sm text-[#e7e9ea] focus:ring-1 focus:ring-[#1d9bf0]"
@@ -303,7 +306,8 @@
                     @foreach ($suggestions as $user)
                         <div class="flex items-center justify-between group">
                             <div class="flex items-center gap-3">
-                                <img src="{{ $user->profile && $user->profile->avatar ? asset('storage/' . $user->profile->avatar) : 'https://i.pravatar.cc/40?u=' . $user->id }}"
+
+                                <img src="{{ $user->profile && $user->profile->avatar ? Storage::url( $user->profile->avatar) : 'https://i.pravatar.cc/40?u=' . $user->id }}"
                                     class="w-10 h-10 rounded-full border border-[#2f3336] object-cover transition transform group-hover:scale-110">
                                 <div class="flex flex-col">
                                     <a href="{{ route('profile.show', $user->id) }}"
