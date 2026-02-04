@@ -20,7 +20,7 @@
                         class="absolute -inset-1 bg-gradient-to-r from-[#1d9bf0] to-[#f91880] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
                     </div>
                     <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? asset('storage/' . auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
-                         class="w-32 h-32 rounded-full object-cover shadow-lg border-2 border-white">
+                        class="w-32 h-32 rounded-full object-cover shadow-lg border-2 border-white">
                 </div>
                 <h3 class="font-bold text-xl text-[#e7e9ea]">{{ auth()->user()->firstname }}
                     {{ auth()->user()->lastname }}</h3>
@@ -83,7 +83,8 @@
                                 class="w-full bg-transparent text-xl text-[#e7e9ea] border-none focus:ring-0 placeholder-[#71767b] resize-none"
                                 rows="3" required></textarea>
                             <div id="image-preview" class="mt-4 hidden relative">
-                                <img src="" class="rounded-2xl max-h-80 w-full object-cover border border-[#2f3336]">
+                                <img src=""
+                                    class="rounded-2xl max-h-80 w-full object-cover border border-[#2f3336]">
                                 <button type="button" onclick="clearImage()"
                                     class="absolute top-2 right-2 bg-black/50 p-1.5 rounded-full text-white hover:bg-black/70">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,7 +138,8 @@
                                     <div class="flex items-center gap-1">
                                         <a href="{{ route('profile.show', $post->user->id) }}"
                                             class="font-bold text-[#e7e9ea] hover:underline">{{ $post->user->name }}</a>
-                                        @if($post->user->id == 1) <!-- Example admin verify -->
+                                        @if ($post->user->id == 1)
+                                            <!-- Example admin verify -->
                                             <svg class="w-4 h-4 text-[#1d9bf0]" fill="currentColor" viewBox="0 0 24 24">
                                                 <path
                                                     d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.15-.44.23-.91.23-1.4 0-2.45-1.99-4.44-4.44-4.44-.49 0-.96.08-1.4.23-1.41-1.3-3.23-2.18-5.26-2.18-2.03 0-3.85.88-5.26 2.18-.44-.15-.91-.23-1.4-.23-2.45 0-4.44 1.99-4.44 4.44 0 .49.08.91.23 1.4-1.3.71-2.18 2.08-2.18 3.66 0 1.58.88 2.95 2.18 3.66-.15.44-.23.91-.23 1.4 0 2.45 1.99 4.44 4.44 4.44.49 0 .96-.08 1.4-.23 1.41 1.3 3.23 2.18 5.26 2.18 2.03 0 3.85-.88 5.26-2.18.44.15.91.23 1.4.23 2.45 0 4.44-1.99 4.44-4.44 0-.49-.08-.91-.23-1.4 1.3-.71 2.18-2.08 2.18-3.66zM10.29 16.72L6.5 12.93l1.41-1.41 2.38 2.38 5.72-5.72 1.41 1.41-7.13 7.13z" />
@@ -147,7 +149,7 @@
                                     <p class="text-xs text-[#71767b]">{{ $post->created_at->diffForHumans() }}</p>
                                 </div>
                             </div>
-                            @if($post->owner_id === auth()->id())
+                            @if ($post->owner_id === auth()->id())
                                 <x-dropdown align="right" width="48">
                                     <x-slot name="trigger">
                                         <button
@@ -166,6 +168,12 @@
                                                 class="text-red-500">
                                                 Delete Post
                                             </x-dropdown-link>
+                                            {{-- @csrf @method('UPDATE') --}}
+                                            {{-- <x-dropdown-link href="#"
+                                                onclick="event.preventDefault(); this.closest('form').submit();"
+                                                class="text-green-500">
+                                                Update Post
+                                            </x-dropdown-link> --}}
                                         </form>
                                     </x-slot>
                                 </x-dropdown>
@@ -177,7 +185,7 @@
                         </div>
                     </div>
 
-                    @if($post->image)
+                    @if ($post->image)
                         <div class="px-5 pb-4">
                             <img src="{{ asset('storage/' . $post->image) }}"
                                 class="rounded-2xl w-full max-h-[512px] object-cover border border-[#2f3336]">
@@ -225,7 +233,8 @@
                     </div>
 
                     <!-- Comments Section -->
-                    <div id="comments-{{ $post->id }}" class="hidden px-5 py-4 bg-black/20 border-t border-[#2f3336]">
+                    <div id="comments-{{ $post->id }}"
+                        class="hidden px-5 py-4 bg-black/20 border-t border-[#2f3336]">
                         <div class="space-y-4">
                             @foreach ($post->comments as $comment)
                                 <div class="flex items-start gap-3">
@@ -258,7 +267,8 @@
             @empty
                 <div class="glass-card p-10 text-center">
                     <div class="w-20 h-20 bg-[#1d9bf0]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-10 h-10 text-[#1d9bf0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-10 h-10 text-[#1d9bf0]" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
@@ -283,7 +293,9 @@
                 </div>
                 <div class="p-4 space-y-4">
                     @php
-                        $suggestions = App\Models\User::where('id', '!=', auth()->id())->limit(5)->get();
+                        $suggestions = App\Models\User::where('id', '!=', auth()->id())
+                            ->limit(5)
+                            ->get();
                     @endphp
                     @foreach ($suggestions as $user)
                         <div class="flex items-center justify-between group">
@@ -325,7 +337,7 @@
             function previewImage(input) {
                 if (input.files && input.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = function (e) {
+                    reader.onload = function(e) {
                         const preview = document.getElementById('image-preview');
                         preview.querySelector('img').src = e.target.result;
                         preview.classList.remove('hidden');

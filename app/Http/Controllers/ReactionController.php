@@ -22,7 +22,7 @@ class ReactionController extends Controller
                 'user_id' => $user->id,
                 'type' => 'like',
             ]);
-            return back()->with('success', 'Post liked!');
+                    return back()->with('success', 'Post liked!');
         }
     }
 }
