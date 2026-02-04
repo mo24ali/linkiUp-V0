@@ -168,12 +168,15 @@
                                                 class="text-red-500">
                                                 Delete Post
                                             </x-dropdown-link>
-                                            {{-- @csrf @method('UPDATE') --}}
-                                            {{-- <x-dropdown-link href="#"
+
+                                        </form>
+                                        <form action="{{ route('posts.update', $post) }}" method="POST">
+                                            @csrf @method('UPDATE')
+                                            <x-dropdown-link href="#"
                                                 onclick="event.preventDefault(); this.closest('form').submit();"
                                                 class="text-green-500">
                                                 Update Post
-                                            </x-dropdown-link> --}}
+                                            </x-dropdown-link>
                                         </form>
                                     </x-slot>
                                 </x-dropdown>
