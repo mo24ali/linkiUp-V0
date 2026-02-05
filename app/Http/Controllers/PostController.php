@@ -6,20 +6,36 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
+use App\Models\Story;
 class PostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $friendIds = $user->acceptedFriends()->pluck('id')->toArray();
+
         $friendIds[] = $user->id;
 
-         $posts = Post::where('status', 'published')
-        ->with(['user', 'comments.user', 'likes'])
-        ->latest()
-        ->paginate(10);
+        $query = Post::where('status', 'published');
 
-    return view('dashboard', compact('posts'));
+        if ($request->filled('search')) {
+            $query->where('content', 'like', '%' . $request->search . '%');
+        }
+
+        $posts = $query->with(['user', 'comments.user', 'likes'])
+            ->latest()
+            ->paginate(10);
+
+        if ($request->ajax()) {
+            return view('components.post-list', compact('posts'))->render();
+        }
+
+        $stories = Story::where('created_at', '>=', now()->subDay())
+            ->with('user')
+            ->latest()
+            ->get();
+
+        return view('dashboard', compact('posts', 'stories'));
     }
 
     public function store(Request $request)
@@ -67,7 +83,7 @@ class PostController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-        // $post->content = $request->content;
+        $post->content = $request->content;
 
         if ($request->hasFile('image')) {
             if ($post->image) {

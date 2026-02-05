@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Faker\Guesser\Name;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class UserController extends Controller
 {
@@ -14,7 +15,7 @@ class UserController extends Controller
         $users = [];
 
         if ($query) {
-            $users = \App\Models\User::where('name', 'LIKE', "%{$query}%")
+            $users = User::where('name', 'LIKE', "%{$query}%")
                 ->orWhere('email', 'LIKE', "%{$query}%")
                 ->where('id', '!=', auth()->id())
                 ->get();
@@ -23,7 +24,7 @@ class UserController extends Controller
         return view('users.index', compact('users', 'query'));
     }
 
-    public function show(\App\Models\User $user)
+    public function show(User $user)
     {
         return redirect()->route('profile.show', $user->id);
     }

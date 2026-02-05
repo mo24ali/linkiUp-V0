@@ -1,62 +1,133 @@
+@php
+
+@endphp
+
 <x-app-layout>
         <x-slot name="header">
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        {{ $user->name }}'s Profile
-                </h2>
+                <div class="flex items-center space-x-4">
+                        <a href="{{ route('dashboard') }}" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                                <svg class="w-5 h-5 text-[#e7e9ea]" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                        </a>
+                        <div>
+                                <h2 class="font-bold text-xl text-[#e7e9ea] leading-tight">
+                                        {{ $user->firstname }} {{ $user->lastname }}
+                                </h2>
+                                <p class="text-xs text-[#71767b]">{{ $user->posts->count() }} Posts</p>
+                        </div>
+                </div>
         </x-slot>
 
-        <div class="py-12">
-                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                        <div
-                                class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg flex items-center space-x-6">
-                                <img src="{{ $user->profile && $user->profile->avatar ? asset('storage/' . $user->profile->avatar) : 'https://i.pravatar.cc/150?u=' . $user->id }}"
-                                        class="w-32 h-32 rounded-full border-4 border-blue-500">
-                                <div>
-                                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                                {{ $user->firstname }} {{ $user->lastname }}</h3>
-                                        <p class="text-gray-600 dark:text-gray-400">@ {{ $user->name }}</p>
-                                        <p class="mt-2 text-gray-800 dark:text-gray-200">
-                                                {{ $user->profile->bio ?? 'No bio yet.' }}</p>
+        <div class="max-w-4xl mx-auto border-x border-[#2f3336] min-h-screen bg-black">
+                <!-- Banner -->
+                <div class="h-48 bg-gradient-to-r from-[#1d9bf0] to-[#f91880] opacity-50 relative">
+                </div>
 
-                                        @if(auth()->id() !== $user->id)
-                                                <div class="mt-4">
-                                                        @php
-                                                                $friendship = auth()->user()->friends()->where('friend_id', $user->id)->first() ?? auth()->user()->friendsOf()->where('user_id', $user->id)->first();
-                                                            @endphp
+                <!-- Profile Info -->
+                <div class="px-4 pb-4">
+                        <div class="relative flex justify-between items-end -mt-16 mb-4">
+                                <div class="p-1 bg-black rounded-full">
+                                        <img src="{{ $user->profile && $user->profile->avatar ? Storage::url($user->profile->avatar) : 'https://i.pravatar.cc/150?u=' . $user->id }}"
+                                                class="w-32 h-32 rounded-full border-4 border-black object-cover">
+                                </div>
 
-                                                        @if(!$friendship)
-                                                                <form action="{{ route('friends.add', $user->id) }}" method="POST">
-                                                                        @csrf
-                                                                        <x-primary-button>Add Friend</x-primary-button>
-                                                                </form>
-                                                        @elseif($friendship->pivot->status === 'pending')
-                                                                <span class="text-yellow-500">Friend Request Pending</span>
-                                                        @else
-                                                                <span class="text-green-500 font-bold">Friends</span>
-                                                        @endif
-                                                </div>
-                                        @endif
+                                @if(auth()->id() === $user->id)
+                                        <a href="{{ route('profile.edit') }}"
+                                                class="mb-2 px-4 py-2 rounded-full border border-[#2f3336] text-[#e7e9ea] font-bold text-sm hover:bg-white/10 transition-colors">
+                                                Edit profile
+                                        </a>
+                                @else
+                                        <div class="mb-2">
+                                                @php
+                                                        $isFriend = auth()->user()->friends()->where('friend_id', $user->id)->exists() || auth()->user()->friendsOf()->where('user_id', $user->id)->exists();
+                                                        $sentRequest = auth()->user()->sentFriendRequests()->where('receiver_id', $user->id)->exists();
+                                                        $receivedRequest = auth()->user()->receivedFriendRequests()->where('sender_id', $user->id)->exists();
+                                                @endphp
+
+                                                @if($isFriend)
+                                                        <button
+                                                                class="px-4 py-2 rounded-full border border-[#2f3336] text-[#e7e9ea] font-bold text-sm hover:bg-red-500/10 hover:text-red-500 transition-colors group">
+                                                                <span class="group-hover:hidden">Following</span>
+                                                                <span class="hidden group-hover:inline">Unfollow</span>
+                                                        </button>
+                                                @elseif($sentRequest)
+                                                        <span
+                                                                class="px-4 py-2 rounded-full border border-[#2f3336] text-[#71767b] font-bold text-sm">
+                                                                Requested
+                                                        </span>
+                                                @elseif($receivedRequest)
+                                                        <form action="{{ route('friends.accept', $user->id) }}" method="POST"
+                                                                class="inline">
+                                                                @csrf
+                                                                <button
+                                                                        class="px-4 py-2 rounded-full bg-[#e7e9ea] text-black font-bold text-sm hover:bg-[#d7d9d9] transition-colors">
+                                                                        Accept Request
+                                                                </button>
+                                                        </form>
+                                                @else
+                                                        <form action="{{ route('friends.add', $user->id) }}" method="POST"
+                                                                class="inline">
+                                                                @csrf
+                                                                <button
+                                                                        class="px-4 py-2 rounded-full bg-[#e7e9ea] text-black font-bold text-sm hover:bg-[#d7d9d9] transition-colors">
+                                                                        Follow
+                                                                </button>
+                                                        </form>
+                                                @endif
+                                        </div>
+                                @endif
+                        </div>
+
+                        <div class="space-y-1">
+                                <h3 class="text-2xl font-black text-[#e7e9ea]">{{ $user->firstname }}
+                                        {{ $user->lastname }}</h3>
+                                <p class="text-[#71767b]">@ {{ $user->name }}</p>
+                        </div>
+
+                        <p class="mt-4 text-[#e7e9ea] text-[15px] leading-normal">
+                                {{ $user->profile->bio ?? 'No bio yet. Linking up soon! 🚀' }}
+                        </p>
+
+                        <div class="mt-4 flex space-x-4 text-sm text-[#71767b]">
+                                <div class="flex items-center space-x-1">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                        d="M19.708 2H4.292C3.028 2 2 3.028 2 4.292v15.416C2 20.972 3.028 22 4.292 22h15.416C20.972 22 22 20.972 22 19.708V4.292C22 3.028 20.972 2 19.708 2zm.792 17.708c0 .437-.355.792-.792.792H4.292a.792.792 0 01-.792-.792V4.292c0-.437.355-.792.792-.792h15.416c.437 0 .792.355.792.792v15.416z" />
+                                        </svg>
+                                        <span>Joined {{ $user->created_at->format('F Y') }}</span>
                                 </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                @foreach($user->posts as $post)
-                                        <div class="bg-white dark:bg-gray-800 p-6 shadow sm:rounded-lg">
-                                                <p class="text-gray-800 dark:text-gray-200">{{ $post->content }}</p>
-                                                @if($post->image)
-                                                        <img src="{{ asset('storage/' . $post->image) }}"
-                                                                class="mt-4 rounded-lg w-full">
-                                                @endif
-                                                <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
-                                                        <span>{{ $post->created_at->diffForHumans() }}</span>
-                                                        <div class="flex space-x-4">
-                                                                <span>👍 {{ $post->likes->count() }}</span>
-                                                                <span>💬 {{ $post->comments->count() }}</span>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                @endforeach
+                        <div class="mt-4 flex space-x-4 text-sm">
+                                <a href="#" class="hover:underline">
+                                        <span
+                                                class="font-bold text-[#e7e9ea]">{{ $user->friends()->count() + $user->friendsOf()->count() }}</span>
+                                        <span class="text-[#71767b]">Following</span>
+                                </a>
+                                <a href="#" class="hover:underline">
+                                        <span class="font-bold text-[#e7e9ea]">{{ $user->posts->count() }}</span>
+                                        <span class="text-[#71767b]">Posts</span>
+                                </a>
                         </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-[#2f3336]">
+                        <button class="flex-1 py-4 text-[#e7e9ea] font-bold border-b-4 border-[#1d9bf0]">Posts</button>
+                        <button
+                                class="flex-1 py-4 text-[#71767b] font-medium hover:bg-white/5 transition-colors">Replies</button>
+                        <button
+                                class="flex-1 py-4 text-[#71767b] font-medium hover:bg-white/5 transition-colors">Media</button>
+                        <button
+                                class="flex-1 py-4 text-[#71767b] font-medium hover:bg-white/5 transition-colors">Likes</button>
+                </div>
+
+                <!-- Feed -->
+                <div class="p-4">
+                        @include('components.post-list', ['posts' => $user->posts])
                 </div>
         </div>
 </x-app-layout>

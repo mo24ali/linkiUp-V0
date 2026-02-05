@@ -4,20 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+// use Illuminate\Container\Attributes\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+// use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function show(User $user): View
+
+    public function show(int $id): View
     {
-        $user->load(['posts.user', 'posts.comments.user', 'posts.likes', 'profile']);
+        $user = User::with([
+            'posts.user',
+            'posts.comments.user',
+            'posts.likes',
+            'profile'
+        ])->findOrFail($id);
+
         return view('profile.show', compact('user'));
     }
+
 
     /**
      * Display the user's profile form.

@@ -26,6 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'slug',
+        'is_admin',
     ];
 
     /**
@@ -95,12 +96,12 @@ class User extends Authenticatable
 
     public function receivedFriendRequests()
     {
-        return $this->friendsOf()->wherePivot('status', 'pending');
+        return $this->hasMany(Invitation::class, 'receiver_id');
     }
 
     public function sentFriendRequests()
     {
-        return $this->friends()->wherePivot('status', 'pending');
+        return $this->hasMany(Invitation::class, 'sender_id');
     }
 
     public function acceptedFriends()
@@ -119,7 +120,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class);
     }
-    public static function friendship(){
-        
-    }
+    // Relationship removed
+    // public function invitations()
+    // {
+    //     return $this->hasMany(Invitations::class);
+    // }
+
 }

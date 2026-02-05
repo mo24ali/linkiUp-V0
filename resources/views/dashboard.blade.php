@@ -1,12 +1,20 @@
-{{-- dd(Storage::url('storage/app/public/avatar' . $user->profile->avatar)); --}}
-
-
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-bold text-2xl tracking-tight text-[#e7e9ea]">
                 {{ __('Home') }}
             </h2>
+
+            <form action="{{ route('dashboard') }}" method="GET" class="relative mx-4 flex-1 max-w-md hidden md:block">
+                <input type="text" name="search" placeholder="Search posts..." value="{{ request('search') }}"
+                    class="w-full bg-[#202327] border-none rounded-full py-2 px-10 text-[#e7e9ea] focus:ring-1 focus:ring-[#1d9bf0] text-sm">
+                <svg class="w-4 h-4 text-[#71767b] absolute left-3 top-1/2 transform -translate-y-1/2" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </form>
+
             <div class="flex items-center space-x-2">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span class="text-xs text-[#71767b] font-medium uppercase tracking-widest">Live Feed</span>
@@ -22,11 +30,12 @@
                     <div
                         class="absolute -inset-1 bg-gradient-to-r from-[#1d9bf0] to-[#f91880] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
                     </div>
-                    <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? Storage::url( auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
+                    <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? Storage::url(auth()->user()->profile->avatar) : 'https://i.pravatar.cc/150?u=' . auth()->id() }}"
                         class="w-32 h-32 rounded-full object-cover shadow-lg border-2 border-white">
                 </div>
                 <h3 class="font-bold text-xl text-[#e7e9ea]">{{ auth()->user()->firstname }}
-                    {{ auth()->user()->lastname }}</h3>
+                    {{ auth()->user()->lastname }}
+                </h3>
                 <p class="text-[#71767b] text-sm mb-6 mt-1 tracking-tight">@ {{ auth()->user()->name }}</p>
 
                 <div class="grid grid-cols-2 gap-4 border-t border-[#2f3336] pt-6">
@@ -74,6 +83,43 @@
 
         <!-- FEED CENTER -->
         <main class="col-span-12 lg:col-span-6 space-y-6">
+            <!-- Stories Section -->
+            <div class="glass-card p-4">
+                <h3 class="font-bold text-[#e7e9ea] mb-3 text-sm">Stories</h3>
+                <div class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+                    <!-- Add Story Form -->
+                    <form action="{{ route('stories.store') }}" method="POST" enctype="multipart/form-data"
+                        class="flex-shrink-0 text-center">
+                        @csrf
+                        <label
+                            class="block w-16 h-16 rounded-full border-2 border-dashed border-[#1d9bf0] flex items-center justify-center hover:bg-[#1d9bf0]/10 cursor-pointer transition group">
+                            <svg class="w-6 h-6 text-[#1d9bf0] group-hover:scale-110 transition-transform" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <input type="file" name="image" class="hidden" onchange="this.form.submit()">
+                        </label>
+                        <span class="text-xs mt-1 block text-[#71767b]">Your Story</span>
+                    </form>
+
+                    @isset($stories)
+                        @foreach($stories as $story)
+                            <div class="flex-shrink-0 text-center w-16 group cursor-pointer"
+                                onclick="viewStory('{{ Storage::url($story->image_path) }}', '{{ $story->user->name }}', '{{ $story->user->profile && $story->user->profile->avatar ? Storage::url($story->user->profile->avatar) : 'https://i.pravatar.cc/150?u=' . $story->user->id }}')">
+                                <div
+                                    class="w-16 h-16 rounded-full ring-2 ring-[#1d9bf0] p-0.5 group-hover:ring-[#f91880] transition-all">
+                                    <img src="{{ $story->user->profile && $story->user->profile->avatar ? Storage::url($story->user->profile->avatar) : 'https://i.pravatar.cc/150?u=' . $story->user->id }}"
+                                        class="w-full h-full rounded-full object-cover">
+                                </div>
+                                <span
+                                    class="text-xs mt-1 block truncate text-[#e7e9ea] max-w-full font-medium">{{ $story->user->name }}</span>
+                            </div>
+                        @endforeach
+                    @endisset
+                </div>
+            </div>
+
             <!-- Create Post Box -->
             <div class="glass-card p-5">
                 <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
@@ -86,8 +132,7 @@
                                 class="w-full bg-transparent text-xl text-[#e7e9ea] border-none focus:ring-0 placeholder-[#71767b] resize-none"
                                 rows="3" required></textarea>
                             <div id="image-preview" class="mt-4 hidden relative">
-                                <img src=""
-                                    class="rounded-2xl max-h-80 w-full object-cover border border-[#2f3336]">
+                                <img src="" class="rounded-2xl max-h-80 w-full object-cover border border-[#2f3336]">
                                 <button type="button" onclick="clearImage()"
                                     class="absolute top-2 right-2 bg-black/50 p-1.5 rounded-full text-white hover:bg-black/70">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,172 +168,57 @@
                 </form>
             </div>
 
-            <!-- Posts List -->
-            @forelse ($posts as $post)
-                <div
-                    class="glass-card hover:bg-[#1c1f23] transition-colors border-l-4 {{ $loop->first ? 'border-l-[#1d9bf0]' : 'border-l-transparent' }}">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-center gap-3">
-                                <div class="relative">
-                                    <img src="{{ $post->user->profile && $post->user->profile->avatar ? Storage::url( $post->user->profile->avatar) : 'https://i.pravatar.cc/48?u=' . $post->user->id }}"
-                                        class="w-12 h-12 rounded-full border border-[#2f3336] object-cover">
-                                    <div
-                                        class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-black bg-green-500">
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-1">
-                                        <a href="{{ route('profile.show', $post->user->id) }}"
-                                            class="font-bold text-[#e7e9ea] hover:underline">{{ $post->user->name }}</a>
-                                        @if ($post->user->id == 1)
-                                            <!-- Example admin verify -->
-                                            <svg class="w-4 h-4 text-[#1d9bf0]" fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.15-.44.23-.91.23-1.4 0-2.45-1.99-4.44-4.44-4.44-.49 0-.96.08-1.4.23-1.41-1.3-3.23-2.18-5.26-2.18-2.03 0-3.85.88-5.26 2.18-.44-.15-.91-.23-1.4-.23-2.45 0-4.44 1.99-4.44 4.44 0 .49.08.91.23 1.4-1.3.71-2.18 2.08-2.18 3.66 0 1.58.88 2.95 2.18 3.66-.15.44-.23.91-.23 1.4 0 2.45 1.99 4.44 4.44 4.44.49 0 .96-.08 1.4-.23 1.41 1.3 3.23 2.18 5.26 2.18 2.03 0 3.85-.88 5.26-2.18.44.15.91.23 1.4.23 2.45 0 4.44-1.99 4.44-4.44 0-.49-.08-.91-.23-1.4 1.3-.71 2.18-2.08 2.18-3.66zM10.29 16.72L6.5 12.93l1.41-1.41 2.38 2.38 5.72-5.72 1.41 1.41-7.13 7.13z" />
-                                            </svg>
-                                        @endif
-                                    </div>
-                                    <p class="text-xs text-[#71767b]">{{ $post->created_at->diffForHumans() }}</p>
-                                </div>
-                            </div>
-                            @if ($post->owner_id === auth()->id())
-                                <x-dropdown align="right" width="48">
-                                    <x-slot name="trigger">
-                                        <button
-                                            class="text-[#71767b] hover:text-[#1d9bf0] p-1 rounded-full hover:bg-[#1d9bf0]/10">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M3 12a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0zm7.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0zm7.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0z" />
-                                            </svg>
-                                        </button>
-                                    </x-slot>
-                                    <x-slot name="content">
-                                        <form action="{{ route('posts.destroy', $post) }}" method="POST">
-                                            @csrf @method('DELETE')
-                                            <x-dropdown-link href="#"
-                                                onclick="event.preventDefault(); this.closest('form').submit();"
-                                                class="text-red-500">
-                                                Delete Post
-                                            </x-dropdown-link>
+            <!-- Posts List Container -->
+            <div id="posts-container">
+                @include('components.post-list')
 
-                                        </form>
-                                        <form action="{{ route('posts.update', $post) }}" method="POST">
-                                            @csrf @method('PUT')
-                                            <x-dropdown-link href="#"
-                                                onclick="event.preventDefault(); this.closest('form').submit();"
-                                                class="text-green-500">
-                                                Update Post
-                                            </x-dropdown-link>
-                                        </form>
-                                    </x-slot>
-                                </x-dropdown>
-                            @endif
-                        </div>
-
-                        <div class="mt-4 text-[#e7e9ea] leading-relaxed">
-                            <p class="whitespace-pre-wrap">{{ $post->content }}</p>
-                        </div>
-                    </div>
-
-                    @if ($post->image)
-                        <div class="px-5 pb-4">
-                            <img src="{{ Storage::url( $post->image) }}"
-                                class="rounded-2xl w-full max-h-[512px] object-cover border border-[#2f3336]">
-                        </div>
-                    @endif
-
-                    <!-- Interactions -->
-                    <div class="px-5 py-3 border-t border-[#2f3336] flex items-center justify-between">
-                        <div class="flex items-center space-x-8">
-                            <form action="{{ route('posts.react', $post) }}" method="POST">
-                                @csrf
-                                <button
-                                    class="group flex items-center gap-2 transition {{ $post->likes->where('user_id', auth()->id())->count() ? 'text-[#f91880]' : 'text-[#71767b]' }}">
-                                    <div class="p-2 rounded-full group-hover:bg-[#f91880]/10 transition-colors">
-                                        <svg class="w-5 h-5"
-                                            fill="{{ $post->likes->where('user_id', auth()->id())->count() ? 'currentColor' : 'none' }}"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                    </div>
-                                    <span class="text-sm font-medium">{{ $post->likes->count() }}</span>
-                                </button>
-                            </form>
-
-                            <button onclick="toggleComments({{ $post->id }})"
-                                class="group flex items-center gap-2 text-[#71767b] hover:text-[#1d9bf0] transition">
-                                <div class="p-2 rounded-full group-hover:bg-[#1d9bf0]/10 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                </div>
-                                <span class="text-sm font-medium">{{ $post->comments->count() }}</span>
-                            </button>
-                        </div>
-
-                        <button
-                            class="p-2 rounded-full text-[#71767b] hover:bg-[#1d9bf0]/10 hover:text-[#1d9bf0] transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Comments Section -->
-                    <div id="comments-{{ $post->id }}"
-                        class="hidden px-5 py-4 bg-black/20 border-t border-[#2f3336]">
-                        <div class="space-y-4">
-                            @foreach ($post->comments as $comment)
-                                <div class="flex items-start gap-3">
-                                    <img src="{{ $comment->user->profile && $comment->user->profile->avatar ? Storage::url( $comment->user->profile->avatar) : 'https://i.pravatar.cc/32?u=' . $comment->user->id }}"
-                                        class="w-8 h-8 rounded-full border border-[#2f3336]">
-                                    <div class="flex-1 bg-[#202327] rounded-2xl px-4 py-2">
-                                        <div class="flex items-center justify-between">
-                                            <p class="text-sm font-bold text-[#e7e9ea]">{{ $comment->user->name }}</p>
-                                            <span
-                                                class="text-[11px] text-[#71767b]">{{ $comment->created_at->shortRelativeDiffForHumans() }}</span>
-                                        </div>
-                                        <p class="text-sm text-[#e7e9ea] mt-0.5">{{ $comment->content }}</p>
-                                    </div>
-                                </div>
-                            @endforeach
-
-                            <form action="{{ route('comments.store', $post) }}" method="POST"
-                                class="flex items-center gap-3 mt-4">
-                                @csrf
-                                <img src="{{ auth()->user()->profile && auth()->user()->profile->avatar ? Storage::url( auth()->user()->profile->avatar) : 'https://i.pravatar.cc/32?u=' . auth()->id() }}"
-                                    class="w-8 h-8 rounded-full border border-[#2f3336]">
-                                <input type="text" name="content" placeholder="Post your reply"
-                                    class="flex-1 bg-[#202327] border-none rounded-full px-4 py-2 text-sm text-[#e7e9ea] focus:ring-1 focus:ring-[#1d9bf0]"
-                                    required>
-                                <button type="submit" class="text-[#1d9bf0] font-bold text-sm px-2">Reply</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="glass-card p-10 text-center">
-                    <div class="w-20 h-20 bg-[#1d9bf0]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-10 h-10 text-[#1d9bf0]" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-bold text-[#e7e9ea]">Welcome to your feed!</h4>
-                    <p class="text-[#71767b] mt-2 mb-6">Start following people to see their latest updates here.</p>
-                    <a href="{{ route('friends.page') }}" class="btn-vibrant inline-block">Find Friends</a>
-                </div>
-            @endforelse
-
-            <!-- Pagination -->
-            <div class="mt-6">
-                {{ $posts->links() }}
             </div>
+
+            <!-- Loading Spinner -->
+            <div id="loading" class="hidden text-center py-4">
+                <svg class="animate-spin h-6 w-6 text-[#1d9bf0] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+            </div>
+
+            <script>
+                let page = 1;
+                let loading = false;
+                window.onscroll = function (ev) {
+                    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                        if (!loading) {
+                            loading = true;
+                            page++;
+                            loadMoreData(page);
+                        }
+                    }
+                };
+
+                function loadMoreData(page) {
+                    document.getElementById('loading').classList.remove('hidden');
+                    fetch('?page=' + page, {
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    })
+                        .then(response => response.text())
+                        .then(html => {
+                            document.getElementById('loading').classList.add('hidden');
+                            if (html.trim() == "") {
+                                return;
+                            }
+                            const container = document.getElementById('posts-container');
+                            container.insertAdjacentHTML('beforeend', html);
+                            loading = false;
+                        })
+                        .catch(() => {
+                            document.getElementById('loading').classList.add('hidden');
+                            loading = false;
+                        });
+                }
+            </script>
         </main>
 
         <!-- RIGHT SIDEBAR -->
@@ -298,7 +228,10 @@
                     <h3 class="font-bold text-xl text-[#e7e9ea]">Who to follow</h3>
                 </div>
                 <div class="p-4 space-y-4">
+                    {{-- use App\Models\User; --}}
+
                     @php
+                        // use App\Models\User;
                         $suggestions = App\Models\User::where('id', '!=', auth()->id())
                             ->limit(5)
                             ->get();
@@ -307,7 +240,7 @@
                         <div class="flex items-center justify-between group">
                             <div class="flex items-center gap-3">
 
-                                <img src="{{ $user->profile && $user->profile->avatar ? Storage::url( $user->profile->avatar) : 'https://i.pravatar.cc/40?u=' . $user->id }}"
+                                <img src="{{ $user->profile && $user->profile->avatar ? Storage::url($user->profile->avatar) : 'https://i.pravatar.cc/40?u=' . $user->id }}"
                                     class="w-10 h-10 rounded-full border border-[#2f3336] object-cover transition transform group-hover:scale-110">
                                 <div class="flex flex-col">
                                     <a href="{{ route('profile.show', $user->id) }}"
@@ -344,7 +277,7 @@
             function previewImage(input) {
                 if (input.files && input.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         const preview = document.getElementById('image-preview');
                         preview.querySelector('img').src = e.target.result;
                         preview.classList.remove('hidden');
@@ -363,6 +296,39 @@
                 const el = document.getElementById(`comments-${postId}`);
                 el.classList.toggle('hidden');
             }
+
+            function viewStory(imgUrl, name, avatar) {
+                const viewer = document.getElementById('story-viewer');
+                document.getElementById('story-img').src = imgUrl;
+                document.getElementById('story-author-name').innerText = name;
+                document.getElementById('story-author-img').src = avatar;
+                viewer.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeStory() {
+                const viewer = document.getElementById('story-viewer');
+                viewer.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
         </script>
     @endpush
+
+    <!-- Story Viewer Modal -->
+    <div id="story-viewer" class="fixed inset-0 z-[100] hidden bg-black flex items-center justify-center">
+        <button onclick="closeStory()"
+            class="absolute top-6 right-6 text-white p-2 hover:bg-white/10 rounded-full z-[110]">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <div class="relative max-w-md w-full h-[90vh] bg-[#15181c] md:rounded-2xl overflow-hidden shadow-2xl">
+            <div
+                class="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent flex items-center gap-3 z-10">
+                <img id="story-author-img" src="" class="w-10 h-10 rounded-full border border-white/20">
+                <span id="story-author-name" class="text-white font-bold shadow-sm"></span>
+            </div>
+            <img id="story-img" src="" class="w-full h-full object-cover">
+        </div>
+    </div>
 </x-app-layout>

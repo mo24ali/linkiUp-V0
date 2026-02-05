@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Comment;
 use App\Models\Post;
+use Illuminate\Mail\Mailables\Content;
 
 class CommentController extends Controller
 {
@@ -13,14 +14,28 @@ class CommentController extends Controller
     {
         $request->validate([
             'content' => 'required|string|max:1000',
+            'parent_id' => 'nullable|exists:comments,id',
         ]);
 
         $post->comments()->create([
-            'content' => $request->content,
-            'user_id' => auth()->id(),
+                'content' => $request->content,
+            'poster_id' => auth()->id()
         ]);
 
         return back()->with('success', 'Comment added successfully!');
+    }
+
+    public function update(Request $request, Comment $comment)
+    {
+        $this->authorize('update', $comment);
+
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        $comment->update(['content' => $request->content]);
+
+        return back()->with('success', 'Comment updated successfully!');
     }
 
     public function destroy(Comment $comment)
@@ -29,5 +44,10 @@ class CommentController extends Controller
         $comment->delete();
 
         return back()->with('success', 'Comment deleted successfully!');
+    }
+    public function toggle(Post $post)
+    {
+
+
     }
 }

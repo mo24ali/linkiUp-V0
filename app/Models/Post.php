@@ -29,11 +29,11 @@ class Post extends Model
 
     public function reactions()
     {
-        return $this->hasMany(Reaction::class);
+        return $this->morphMany(Reaction::class, 'reactable');
     }
 
     public function likes()
     {
-        return $this->hasMany(Reaction::class)->where('type', 'like');
+        return $this->morphMany(Reaction::class, 'reactable')->where('type', 'like');
     }
 }
