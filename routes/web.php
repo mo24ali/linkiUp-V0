@@ -27,15 +27,15 @@ Route::middleware('auth')->group(function () {
 
     // Posts
     Route::resource('posts', PostController::class)->except(['index', 'create', 'show']);
-    Route::post('/posts/{post}', [PostController::class, 'destroy']);
-    Route::post('/posts/{post}', [PostController::class, 'update']);
 
     // Comments
     Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::patch('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     // // Reactions
     Route::post('/posts/{post}/react', [ReactionController::class, 'toggle'])->name('posts.react');
+    Route::post('/comments/{comment}/react', [ReactionController::class, 'toggleComment'])->name('comments.react');
 
     // // Admin Moderation
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
@@ -43,7 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/posts/{post}/reject', [AdminController::class, 'reject'])->name('admin.reject');
 });
 
-    // userController routes
+// userController routes
 Route::get('/users', [UserController::class, 'index'])
     ->name('users.index')
     ->middleware('auth');

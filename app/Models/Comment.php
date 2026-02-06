@@ -41,4 +41,9 @@ class Comment extends Model
     {
         return $this->morphMany(Reaction::class, 'reactable');
     }
+
+    public function likes()
+    {
+        return $this->morphMany(Reaction::class, 'reactable')->where('type', 'like');
+    }
 }

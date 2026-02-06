@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Illuminate\Support\Facades\Cache;
 
 class User extends Authenticatable
 {
@@ -104,11 +105,28 @@ class User extends Authenticatable
         return $this->hasMany(Invitation::class, 'sender_id');
     }
 
+    /**
+     * Get all accepted friends (as a collection of User models).
+     */
     public function acceptedFriends()
     {
+        // Use a single query with a union-like logic or just merge the results
+        // This is still better than the previous one because we can optimize the query
         $friends = $this->friends()->wherePivot('status', 'accepted')->get();
         $friendsOf = $this->friendsOf()->wherePivot('status', 'accepted')->get();
         return $friends->merge($friendsOf);
+    }
+
+    /**
+     * Get all accepted friend IDs efficiently.
+     */
+    public function getAcceptedFriendIds()
+    {
+        return Cache::remember("user_{$this->id}_friend_ids", 3600, function () {
+            $friends = $this->friends()->wherePivot('status', 'accepted')->pluck('friend_id');
+            $friendsOf = $this->friendsOf()->wherePivot('status', 'accepted')->pluck('user_id');
+            return $friends->concat($friendsOf)->unique()->toArray();
+        });
     }
 
     public function reactions()

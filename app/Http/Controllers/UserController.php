@@ -12,13 +12,19 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = $request->input('query');
-        $users = [];
+
+        $usersQuery = User::where('id', '!=', auth()->id())
+            ->with('profile');
 
         if ($query) {
-            $users = User::where('name', 'LIKE', "%{$query}%")
-                ->orWhere('email', 'LIKE', "%{$query}%")
-                ->where('id', '!=', auth()->id())
-                ->get();
+            $usersQuery->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('email', 'LIKE', "%{$query}%");
+            });
+            $users = $usersQuery->get();
+        } else {
+            // Random discovery if no query
+            $users = $usersQuery->inRandomOrder()->limit(12)->get();
         }
 
         return view('users.index', compact('users', 'query'));

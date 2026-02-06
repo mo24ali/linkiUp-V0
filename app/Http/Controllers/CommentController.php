@@ -18,8 +18,9 @@ class CommentController extends Controller
         ]);
 
         $post->comments()->create([
-                'content' => $request->content,
-            'poster_id' => auth()->id()
+            'content' => $request->content,
+            'poster_id' => auth()->id(),
+            'parent_id' => $request->parent_id
         ]);
 
         return back()->with('success', 'Comment added successfully!');

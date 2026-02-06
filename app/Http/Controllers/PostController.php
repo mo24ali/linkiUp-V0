@@ -7,22 +7,48 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use App\Models\Story;
+use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 class PostController extends Controller
 {
     public function index(Request $request)
     {
         $user = auth()->user();
-        $friendIds = $user->acceptedFriends()->pluck('id')->toArray();
-
+        // Use optimized friend IDs helper
+        $friendIds = $user->getAcceptedFriendIds();
         $friendIds[] = $user->id;
 
         $query = Post::where('status', 'published');
 
         if ($request->filled('search')) {
             $query->where('content', 'like', '%' . $request->search . '%');
+        } else {
+            // Show feed from friends and self
+            $query->whereIn('owner_id', $friendIds);
         }
 
-        $posts = $query->with(['user', 'comments.user', 'likes'])
+        $posts = $query->with([
+            'user.profile',
+            'likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the post
+            'comments' => function ($q) use ($user) {
+                $q->latest()->limit(3)
+                    ->with([
+                        'user.profile',
+                        'replies' => function ($r) use ($user) {
+                            // Eager load reply details
+                            $r->with(['user.profile'])
+                                ->withCount('likes'); // Count likes on replies
+                        },
+                        // Check if current user liked replies
+                        'replies.likes' => function ($r) use ($user) {
+                            $r->where('user_id', $user->id);
+                        }
+                    ])
+                    ->withCount('likes'); // Count likes on comments
+            },
+            'comments.likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the comment
+        ])
+            ->withCount(['likes', 'comments'])
             ->latest()
             ->paginate(10);
 
@@ -30,12 +56,23 @@ class PostController extends Controller
             return view('components.post-list', compact('posts'))->render();
         }
 
-        $stories = Story::where('created_at', '>=', now()->subDay())
-            ->with('user')
-            ->latest()
+        // Cache stories for 5 minutes
+        $stories = Cache::remember('active_stories', 300, function () {
+            return Story::where('created_at', '>=', now()->subDay())
+                ->with('user.profile')
+                ->latest()
+                ->get();
+        });
+
+        // Suggestions for "Who to follow": users who are not friends yet
+        $suggestions = User::where('id', '!=', $user->id)
+            ->whereNotIn('id', $friendIds)
+            ->with('profile')
+            ->inRandomOrder()
+            ->limit(5)
             ->get();
 
-        return view('dashboard', compact('posts', 'stories'));
+        return view('dashboard', compact('posts', 'stories', 'suggestions'));
     }
 
     public function store(Request $request)

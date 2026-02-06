@@ -228,35 +228,28 @@
                     <h3 class="font-bold text-xl text-[#e7e9ea]">Who to follow</h3>
                 </div>
                 <div class="p-4 space-y-4">
-                    {{-- use App\Models\User; --}}
-
-                    @php
-                        // use App\Models\User;
-                        $suggestions = App\Models\User::where('id', '!=', auth()->id())
-                            ->limit(5)
-                            ->get();
-                    @endphp
-                    @foreach ($suggestions as $user)
-                        <div class="flex items-center justify-between group">
-                            <div class="flex items-center gap-3">
-
-                                <img src="{{ $user->profile && $user->profile->avatar ? Storage::url($user->profile->avatar) : 'https://i.pravatar.cc/40?u=' . $user->id }}"
-                                    class="w-10 h-10 rounded-full border border-[#2f3336] object-cover transition transform group-hover:scale-110">
-                                <div class="flex flex-col">
-                                    <a href="{{ route('profile.show', $user->id) }}"
-                                        class="font-bold text-sm text-[#e7e9ea] hover:underline truncate max-w-[100px]">{{ $user->name }}</a>
-                                    <span class="text-xs text-[#71767b]">@ {{ Str::slug($user->name) }}</span>
+                    @isset($suggestions)
+                        @foreach ($suggestions as $user)
+                            <div class="flex items-center justify-between group">
+                                <div class="flex items-center gap-3">
+                                    <img src="{{ $user->profile && $user->profile->avatar ? Storage::url($user->profile->avatar) : 'https://i.pravatar.cc/40?u=' . $user->id }}"
+                                        class="w-10 h-10 rounded-full border border-[#2f3336] object-cover transition transform group-hover:scale-110">
+                                    <div class="flex flex-col">
+                                        <a href="{{ route('profile.show', $user->id) }}"
+                                            class="font-bold text-sm text-[#e7e9ea] hover:underline truncate max-w-[100px]">{{ $user->name }}</a>
+                                        <span class="text-xs text-[#71767b]">@ {{ Str::slug($user->name) }}</span>
+                                    </div>
                                 </div>
+                                <form action="{{ route('friends.add', $user->id) }}" method="POST">
+                                    @csrf
+                                    <button
+                                        class="bg-[#e7e9ea] text-black text-xs font-bold py-1.5 px-4 rounded-full hover:bg-[#d7d9d9] transition-colors">
+                                        Follow
+                                    </button>
+                                </form>
                             </div>
-                            <form action="{{ route('friends.add', $user->id) }}" method="POST">
-                                @csrf
-                                <button
-                                    class="bg-[#e7e9ea] text-black text-xs font-bold py-1.5 px-4 rounded-full hover:bg-[#d7d9d9] transition-colors">
-                                    Follow
-                                </button>
-                            </form>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    @endisset
                     <a href="{{ route('friends.page') }}"
                         class="block text-[#1d9bf0] text-sm py-2 hover:bg-[#1d9bf0]/5 rounded-lg transition-colors">Show
                         more</a>
@@ -310,6 +303,26 @@
                 const viewer = document.getElementById('story-viewer');
                 viewer.classList.add('hidden');
                 document.body.style.overflow = 'auto';
+            }
+
+            function editPost(id, content) {
+                document.getElementById(`post-content-${id}`).classList.add('hidden');
+                document.getElementById(`post-edit-${id}`).classList.remove('hidden');
+            }
+
+            function cancelEditPost(id) {
+                document.getElementById(`post-content-${id}`).classList.remove('hidden');
+                document.getElementById(`post-edit-${id}`).classList.add('hidden');
+            }
+
+            function editComment(id, content) {
+                document.getElementById(`comment-content-${id}`).classList.add('hidden');
+                document.getElementById(`comment-edit-${id}`).classList.remove('hidden');
+            }
+
+            function cancelEditComment(id) {
+                document.getElementById(`comment-content-${id}`).classList.remove('hidden');
+                document.getElementById(`comment-edit-${id}`).classList.add('hidden');
             }
         </script>
     @endpush
