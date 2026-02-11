@@ -9,18 +9,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Story;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
+
 class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         // Use optimized friend IDs helper
-        $friendIds = $user->getAcceptedFriendIds();
-        $friendIds[] = $user->id;
+        $friendIds = User::get()->pluck('id');
+        // dd($friendIds);
+        // $friendIdsTab[] = $user->id;
+        // dd($friendIdsTab);
 
         $query = Post::where('status', 'published');
 
-        if ($request->filled('search')) {
+        if ($request->filled(key: 'search')) {
             $query->where('content', 'like', '%' . $request->search . '%');
         } else {
             // Show feed from friends and self
@@ -29,7 +33,7 @@ class PostController extends Controller
 
         $posts = $query->with([
             'user.profile',
-            'likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the post
+            'likes' => fn($q): mixed => $q->where('user_id', $user->id), // Check if user liked the post
             'comments' => function ($q) use ($user) {
                 $q->latest()->limit(3)
                     ->with([
@@ -46,11 +50,12 @@ class PostController extends Controller
                     ])
                     ->withCount('likes'); // Count likes on comments
             },
-            'comments.likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the comment
+            'comments.likes' => fn($q) => $q->where('user_id', $user->id), //  Check if user liked the comment
         ])
             ->withCount(['likes', 'comments'])
             ->latest()
             ->paginate(10);
+        // ->where('owner_id','!=',$user->id );
 
         if ($request->ajax()) {
             return view('components.post-list', compact('posts'))->render();

@@ -8,6 +8,13 @@ use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
+
+
+    // MUST IMPLEMENT THE SEE USERS AND RECEIVED MESSAGES LOGIC
+    public function show(){
+        
+        return view('messagerie.index');
+    }
     public function send(Request $request){
         $request->validate([
             'content' => 'required |string',

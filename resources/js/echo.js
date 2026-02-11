@@ -13,7 +13,4 @@ window.Echo = new Echo({
     enabledTransports: ['ws', 'wss'],
 });
 
- window.Echo.channel('chat')
-    .listen('.message.event', (e)=>{
-        console.log('New message: ',e.message);
-    })
+ 
