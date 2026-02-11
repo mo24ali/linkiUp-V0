@@ -16,7 +16,6 @@
                             {{ $post->created_at->diffForHumans() }}</span>
                     </div>
 
-                    @if($post->owner_id === auth()->id())
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="text-[#71767b] hover:text-[#1d9bf0] p-2 rounded-full hover:bg-[#1d9bf0]/10 transition-colors">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -24,10 +23,13 @@
                             </svg>
                         </button>
                         <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-[#15181c] border border-[#2f3336] rounded-xl shadow-xl z-50 py-2">
+                            @can('update', $post)
                             <button onclick="editPost({{ $post->id }}, '{{ addslashes($post->content) }}')" class="w-full text-left px-4 py-2 text-sm text-[#e7e9ea] hover:bg-[#2f3336] flex items-center">
                                 <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 Edit Post
                             </button>
+                            @endcan
+                            @can('update', $post)
                             <form action="{{ route('posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
                                 @csrf
                                 @method('DELETE')
@@ -36,9 +38,9 @@
                                     Delete Post
                                 </button>
                             </form>
+                            @endcan
                         </div>
                     </div>
-                    @endif
                 </div>
 
                 <!-- Post Content / Edit Form -->

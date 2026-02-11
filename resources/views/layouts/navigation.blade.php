@@ -42,7 +42,7 @@
                     </svg>
                     {{ __('Find Friends') }}
                 </x-nav-link>
-                @if(Auth::user()->is_admin)
+                @can('acces-admin')
                     <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -50,7 +50,7 @@
                         </svg>
                         {{ __('Admin') }}
                     </x-nav-link>
-                @endif
+                    @endcan
             </div>
 
             <!-- Right Side -->

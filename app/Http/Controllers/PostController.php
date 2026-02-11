@@ -15,7 +15,8 @@ class PostController extends Controller
     {
         $user = auth()->user();
         // Use optimized friend IDs helper
-        $friendIds = $user->getAcceptedFriendIds();
+        $friendIds = User::all()->pluck('id');
+        
         $friendIds[] = $user->id;
 
         $query = Post::where('status', 'published');
@@ -27,30 +28,7 @@ class PostController extends Controller
             $query->whereIn('owner_id', $friendIds);
         }
 
-        $posts = $query->with([
-            'user.profile',
-            'likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the post
-            'comments' => function ($q) use ($user) {
-                $q->latest()->limit(3)
-                    ->with([
-                        'user.profile',
-                        'replies' => function ($r) use ($user) {
-                            // Eager load reply details
-                            $r->with(['user.profile'])
-                                ->withCount('likes'); // Count likes on replies
-                        },
-                        // Check if current user liked replies
-                        'replies.likes' => function ($r) use ($user) {
-                            $r->where('user_id', $user->id);
-                        }
-                    ])
-                    ->withCount('likes'); // Count likes on comments
-            },
-            'comments.likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the comment
-        ])
-            ->withCount(['likes', 'comments'])
-            ->latest()
-            ->paginate(10);
+        $posts = Post::all();
 
         if ($request->ajax()) {
             return view('components.post-list', compact('posts'))->render();
@@ -87,7 +65,7 @@ class PostController extends Controller
 
         foreach ($forbiddenWords as $word) {
             if (stripos($request->content, $word) !== false) {
-                $status = 'pending'; // For moderation
+                $status = 'pending';
                 break;
             }
         }
@@ -114,7 +92,6 @@ class PostController extends Controller
     public function update(Request $request, Post $post)
     {
         $this->authorize('update', $post);
-
         $request->validate([
             'content' => 'required|string',
             'image' => 'nullable|image|max:2048',
@@ -136,8 +113,6 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {
-        $this->authorize('delete', $post);
-
         if ($post->image) {
             Storage::disk('public')->delete($post->image);
         }
