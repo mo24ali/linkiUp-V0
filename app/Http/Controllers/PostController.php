@@ -9,19 +9,24 @@ use App\Http\Controllers\Controller;
 use App\Models\Story;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
+
 class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         // Use optimized friend IDs helper
-        $friendIds = User::all()->pluck('id');
-        
-        $friendIds[] = $user->id;
+        $friendIds = User::get()->pluck('id');
+        // dd($friendIds);
+        // $friendIdsTab[] = $user->id;
+        // dd($friendIdsTab);
 
+
+        
         $query = Post::where('status', 'published');
 
-        if ($request->filled('search')) {
+        if ($request->filled(key: 'search')) {
             $query->where('content', 'like', '%' . $request->search . '%');
         } else {
             // Show feed from friends and self

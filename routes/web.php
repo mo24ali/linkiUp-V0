@@ -14,6 +14,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -66,7 +67,7 @@ Route::post('/friends/add/{id}', [FriendshipController::class, 'add'])->name('fr
 Route::post('/friends/accept/{id}', [FriendshipController::class, 'accept'])->name('friends.accept');
 Route::post('/friends/reject/{id}', [FriendshipController::class, 'reject'])->name('friends.reject');
 
-Route::get('/messagerie/index', [MessagerieController::class, 'show'])->name('messagerie.index');
+Route::get('/messagerie/index', [ChatController::class, 'show'])->name('messagerie.index');
 
 // Google OAuth Routes
 Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
