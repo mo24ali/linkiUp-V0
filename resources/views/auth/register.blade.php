@@ -49,4 +49,8 @@
             </x-primary-button>
         </div>
     </form>
+    <a href="{{ route('google.redirect') }}"
+       class="w-full inline-flex justify-center items-center gap-2 rounded-lg border px-4 py-2">
+        Continue with Google
+    </a>
 </x-guest-layout>
