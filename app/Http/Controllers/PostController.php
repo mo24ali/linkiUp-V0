@@ -22,6 +22,8 @@ class PostController extends Controller
         // $friendIdsTab[] = $user->id;
         // dd($friendIdsTab);
 
+
+        
         $query = Post::where('status', 'published');
 
         if ($request->filled(key: 'search')) {
