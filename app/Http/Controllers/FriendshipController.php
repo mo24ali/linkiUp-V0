@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class FriendshipController extends Controller
 {
@@ -35,7 +36,7 @@ class FriendshipController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('pseudo', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         } else {
@@ -58,7 +59,7 @@ class FriendshipController extends Controller
         }
 
         \App\Models\Invitation::create([
-            'sender_id' => auth()->id(),
+            'sender_id' => Auth::id(),
             'receiver_id' => $id,
             'body' => 'Friend request',
         ]);
