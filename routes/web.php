@@ -66,6 +66,8 @@ Route::post('/friends/accept/{id}', [FriendshipController::class, 'accept'])->na
 Route::post('/friends/reject/{id}', [FriendshipController::class, 'reject'])->name('friends.reject');
 
 Route::get('/messagerie/index', [ChatController::class, 'show'])->name('messagerie.index');
+Route::post('/chat/send', [ChatController::class, 'send'])->middleware('auth')->name('chat.send');
+Route::get('/chat/messages/{conversation}', [ChatController::class, 'fetchMessages'])->middleware('auth')->name('chat.messages');
 
 
 require __DIR__ . '/auth.php';
