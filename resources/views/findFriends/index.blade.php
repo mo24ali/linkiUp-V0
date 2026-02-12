@@ -10,9 +10,9 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                    <!-- Livewire Friend Search -->
-<div class="mb-8 max-w-2xl mx-auto">
-    @livewire('friend-search')
-</div>
+                    <div class="mb-8 max-w-2xl mx-auto">
+                        <livewire:friend-search/>
+                    </div>
 
                     <!-- Users Grid -->
                     @if(isset($users) && $users->count() > 0)

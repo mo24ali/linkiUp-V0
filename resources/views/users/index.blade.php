@@ -20,18 +20,8 @@
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1d9bf0]/10 via-transparent to-[#f91880]/10 p-1">
             <div class="glass-card p-8 md:p-12 text-center">
                 <h1 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Discover Your Circle</h1>
-                <p class="text-lg text-[#71767b] mb-10 max-w-2xl mx-auto">Connecting with like-minded individuals is just a search away. Find your friends, colleagues, or new connections.</p>
                 
-                <form action="{{ route('users.index') }}" method="GET" class="max-w-2xl mx-auto relative group">
-                    <input type="text" name="query" value="{{ $query }}" placeholder="Search by name, pseudo or email..."
-                        class="w-full bg-[#15181c] border-2 border-[#2f3336] group-focus-within:border-[#1d9bf0] rounded-2xl py-5 px-16 text-white text-xl transition-all shadow-2xl focus:ring-0">
-                    <svg class="w-7 h-7 text-[#71767b] group-focus-within:text-[#1d9bf0] absolute left-6 top-1/2 transform -translate-y-1/2 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 btn-vibrant py-2.5 px-6">
-                        Search
-                    </button>
-                </form>
+                <livewire:test/>
             </div>
         </div>
 
