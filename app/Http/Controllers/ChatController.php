@@ -74,7 +74,7 @@ class ChatController extends Controller
             'content' => $request->input('content'),
         ]);
 
-        broadcast(new MessageEvent($message))->toOthers();
+        event(new MessageEvent($message))->toOthers();
 
         return response()->json([
             'status' => 'success',
@@ -82,7 +82,13 @@ class ChatController extends Controller
             'conversation_id' => $conversation->id
         ]);
     }
-
+    public function markAsRead(Conversation $conversation)
+    {
+        Message::where('conversation_id', $conversation->id())
+            ->where('receiver_id', Auth::id())
+            ->whereNull('read_at')
+            ->update(['read_at' => true]);
+    }
     public function fetchMessages(Conversation $conversation)
     {
         // Check authorization
@@ -92,7 +98,7 @@ class ChatController extends Controller
         }
 
         $messages = $conversation->messages()->with('sender')->get();
-
+        // $this->markAsRead($conversation);
         return response()->json([
             'messages' => $messages
         ]);
