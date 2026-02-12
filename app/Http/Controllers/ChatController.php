@@ -74,7 +74,7 @@ class ChatController extends Controller
             'content' => $request->input('content'),
         ]);
 
-        broadcast(new MessageEvent($message))->toOthers();
+        event(new MessageEvent($message))->toOthers();
 
         return response()->json([
             'status' => 'success',
