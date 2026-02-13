@@ -96,12 +96,10 @@
                             </x-dropdown-link>
 
                             <!-- Authentication -->
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" id="logout-form">
                                 @csrf
-                                <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                    this.closest('form').submit();"
-                                    class="text-sm">
+                                <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
+                                                    document.getElementById('logout-form').submit();" class="text-sm">
                                     {{ __('Log Out') }}
                                 </x-dropdown-link>
                             </form>
@@ -185,11 +183,10 @@
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" id="logout-form-mobile">
                     @csrf
-                    <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault();
-                                        this.closest('form').submit();">
+                    <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
+                                        document.getElementById('logout-form-mobile').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
                 </form>
@@ -197,3 +194,18 @@
         </div>
     </div>
 </nav>
+<script>
+    // Remove beforeunload event when logging out
+    document.addEventListener('DOMContentLoaded', function() {
+        // Remove any beforeunload listeners that might cause confirmation
+        window.onbeforeunload = null;
+        
+        // Also remove any form change tracking
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                window.onbeforeunload = null;
+            });
+        });
+    });
+</script>
