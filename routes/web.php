@@ -14,7 +14,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ChatController;
+use App\Http\Controllers\QrController;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 Route::get('/', function () {
     return view('welcome');
@@ -83,4 +84,10 @@ Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirect'])
 Route::get('/auth/facebook/callback', [FacebookController::class, 'callback'])
     ->name('facebook.callback');
 
+Route::get('/qrcode', function(){
+    return QrCode::size(200)->generate('Hello Mehdi!');
+});
+
+
+Route::get('/my_qr', [QrController::class, 'myQr'])->middleware('auth');
 require __DIR__ . '/auth.php';
