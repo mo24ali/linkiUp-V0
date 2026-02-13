@@ -75,17 +75,45 @@ class FriendshipController extends Controller
         // Re-reading user request: "Added to invitation table... user can choose whether to accept or refuse".
         // I will implement finding the invitation by Sender ID ($id).
 
-        $invitation = \App\Models\Invitation::where('sender_id', $id)->where('receiver_id', auth()->id())->first();
+        $currentUser = auth()->user();
+
+        // Récupérer l'invitation
+        $invitation = \App\Models\Invitation::where('sender_id', $id)
+            ->where('receiver_id', $currentUser->id)
+            ->first();
 
         if (!$invitation) {
-            // Maybe $id IS the invitation ID?
+            // Optionnel : essayer de trouver par invitation ID
             $invitation = \App\Models\Invitation::find($id);
         }
 
-        if ($invitation && $invitation->receiver_id == auth()->id()) {
-            // Create friendship
-            $invitation->sender->friends()->attach($invitation->receiver_id, ['status' => 'accepted']);
+        if ($invitation && $invitation->receiver_id == $currentUser->id) {
+            $sender = $invitation->sender;
+
+            // Calculer min/max pour une seule ligne
+            $user1Id = min($sender->id, $currentUser->id);
+            $user2Id = max($sender->id, $currentUser->id);
+
+            // Vérifier si l'amitié existe déjà
+            $exists = \App\Models\User::find($user1Id)
+                ->friends()
+                ->where('friend_id', $user2Id)
+                ->exists();
+
+            if (!$exists) {
+                // Créer l'amitié avec Eloquent
+                \App\Models\User::find($user1Id)
+                    ->friends()
+                    ->attach($user2Id, [
+                        'status' => 'accepted',
+                        'created_at' => now(), 
+                        'updated_at' => now()
+                        ]);
+            }
+
+            // Supprimer l'invitation
             $invitation->delete();
+
             return back()->with('success', 'Friend request accepted!');
         }
 
@@ -106,6 +134,7 @@ class FriendshipController extends Controller
         return back()->with('error', 'Invitation not found.');
     }
 
+
     public function addFriendByQr($token){
         $currentUser = auth()->user(); //celui qui scanne
         $friend = User::where('qr_token', $token)->first();
@@ -114,14 +143,54 @@ class FriendshipController extends Controller
             return "QR code invalide";
         }
 
-        if ($currentUser->friend()->where('friend_id', $friend->id)) {
+        if ($currentUser->friends()->where('friend_id', $friend->id)) {
             return "Vous etes deja amis";
         }
 
         //Cree la relation d'amitie
-        $currentUser->friend()->attach($friend->id);
+        $currentUser->friends()->attach($friend->id);
 
         return "Amitie acceptee automatiquement";
     }
+
+    public function addFriend($token)
+    {
+        $currentUser = auth()->user();
+
+        // Trouver le user correspondant au token
+        $friend = \App\Models\User::where('qr_token', $token)->first();
+
+        if (!$friend) {
+            return back()->with('error', 'QR code invalide.');
+        }
+
+        // Empêcher l'utilisateur de devenir ami avec lui-même
+        if ($friend->id === $currentUser->id) {
+            return back()->with('error', 'Vous ne pouvez pas devenir ami avec vous-même.');
+        }
+
+        // Calculer min/max pour la table pivot
+        $user1Id = min($currentUser->id, $friend->id);
+        $user2Id = max($currentUser->id, $friend->id);
+
+        // Vérifier si l'amitié existe déjà
+        $exists = \App\Models\User::find($user1Id)
+            ->friends()
+            ->where('friend_id', $user2Id)
+            ->exists();
+
+        if (!$exists) {
+            \App\Models\User::find($user1Id)
+                ->friends()
+                ->attach($user2Id, [
+                    'status' => 'accepted',   // <- obligatoire pour PostgreSQL
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+        }
+
+        return back()->with('success', 'Amitié acceptée automatiquement !');
+    }
+
    
 }

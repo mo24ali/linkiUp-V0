@@ -8,13 +8,20 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QrController extends Controller
 {
-    public function myQr(){
+    public function myQr()
+    {
         $user = auth()->user();
 
-        // Générer un nouveau token et sauvegarder dans la DB
+        // Générer un nouveau token pour chaque scan
         $user->qr_token = Str::uuid();
         $user->save();
 
-        return QrCode::size(200)->generate($user->qr_token);
+        // URL complète pour le QR code
+        $url = url('/add-friend/'.$user->qr_token);
+
+        // Générer le QR code avec l'URL complète
+        $qr = QrCode::size(200)->generate($url);
+
+        return response()->json(['qr' => (string) $qr]);
     }
 }

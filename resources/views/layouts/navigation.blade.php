@@ -49,15 +49,15 @@
                     </svg>
                     {{ __('Messages') }}
                 </x-nav-link>
-                @can('acces-admin')
-                    <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                        {{ __('Admin') }}
-                    </x-nav-link>
-                    @endcan
+                @if(Auth::user()->is_admin)
+                <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    {{ __('Admin') }}
+                </x-nav-link>
+                @endif
             </div>
 
             <!-- Right Side -->
@@ -155,7 +155,11 @@
                 {{ __('Find Friends') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('messagerie.index')" :active="request()->routeIs('messagerie.index')">
+<<<<<<< HEAD
+               <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+=======
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+>>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
                     <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
                     </path>
                 </svg>

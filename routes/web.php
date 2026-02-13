@@ -109,4 +109,8 @@ Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirect'])->
 Route::get('/auth/facebook/callback', [FacebookController::class, 'callback'])->name('facebook.callback');
 
 
-require __DIR__.'/auth.php';
+Route::get('/my-qr', [QrController::class, 'myQr'])->middleware('auth');
+
+Route::get('add-friend/{token}', [FriendshipController::class, 'addFriend'])->middleware('auth');
+
+require __DIR__ . '/auth.php';
