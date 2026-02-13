@@ -93,8 +93,8 @@
                         @csrf
                         <label
                             class="block w-16 h-16 rounded-full border-2 border-dashed border-[#1d9bf0] flex items-center justify-center hover:bg-[#1d9bf0]/10 cursor-pointer transition group">
-                            <svg class="w-6 h-6 text-[#1d9bf0] group-hover:scale-110 transition-transform" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-6 h-6 text-[#1d9bf0] group-hover:scale-110 transition-transform"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
@@ -104,7 +104,7 @@
                     </form>
 
                     @isset($stories)
-                        @foreach($stories as $story)
+                        @foreach ($stories as $story)
                             <div class="flex-shrink-0 text-center w-16 group cursor-pointer"
                                 onclick="viewStory('{{ Storage::url($story->image_path) }}', '{{ $story->user->name }}', '{{ $story->user->profile && $story->user->profile->avatar ? Storage::url($story->user->profile->avatar) : 'https://i.pravatar.cc/150?u=' . $story->user->id }}')">
                                 <div
@@ -132,7 +132,8 @@
                                 class="w-full bg-transparent text-xl text-[#e7e9ea] border-none focus:ring-0 placeholder-[#71767b] resize-none"
                                 rows="3" required></textarea>
                             <div id="image-preview" class="mt-4 hidden relative">
-                                <img src="" class="rounded-2xl max-h-80 w-full object-cover border border-[#2f3336]">
+                                <img src=""
+                                    class="rounded-2xl max-h-80 w-full object-cover border border-[#2f3336]">
                                 <button type="button" onclick="clearImage()"
                                     class="absolute top-2 right-2 bg-black/50 p-1.5 rounded-full text-white hover:bg-black/70">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,9 +177,10 @@
 
             <!-- Loading Spinner -->
             <div id="loading" class="hidden text-center py-4">
-                <svg class="animate-spin h-6 w-6 text-[#1d9bf0] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <svg class="animate-spin h-6 w-6 text-[#1d9bf0] mx-auto" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                     </path>
@@ -188,7 +190,7 @@
             <script>
                 let page = 1;
                 let loading = false;
-                window.onscroll = function (ev) {
+                window.onscroll = function(ev) {
                     if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
                         if (!loading) {
                             loading = true;
@@ -201,8 +203,10 @@
                 function loadMoreData(page) {
                     document.getElementById('loading').classList.remove('hidden');
                     fetch('?page=' + page, {
-                        headers: { "X-Requested-With": "XMLHttpRequest" }
-                    })
+                            headers: {
+                                "X-Requested-With": "XMLHttpRequest"
+                            }
+                        })
                         .then(response => response.text())
                         .then(html => {
                             document.getElementById('loading').classList.add('hidden');
@@ -270,7 +274,7 @@
             function previewImage(input) {
                 if (input.files && input.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = function (e) {
+                    reader.onload = function(e) {
                         const preview = document.getElementById('image-preview');
                         preview.querySelector('img').src = e.target.result;
                         preview.classList.remove('hidden');

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\FacebookController;
 use App\Http\Controllers\MessagerieController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -40,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/comments/{comment}/react', [ReactionController::class, 'toggleComment'])->name('comments.react');
 
     // // Admin Moderation
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index')->middleware('can:acces-admin');
     Route::post('/admin/posts/{post}/approve', [AdminController::class, 'approve'])->name('admin.approve');
     Route::post('/admin/posts/{post}/reject', [AdminController::class, 'reject'])->name('admin.reject');
 });
@@ -66,8 +68,21 @@ Route::post('/friends/add/{id}', [FriendshipController::class, 'add'])->name('fr
 Route::post('/friends/accept/{id}', [FriendshipController::class, 'accept'])->name('friends.accept');
 Route::post('/friends/reject/{id}', [FriendshipController::class, 'reject'])->name('friends.reject');
 
-Route::get('/messagerie/index', [MessagerieController::class, 'show'])->name('messagerie.index');
+Route::get('/messagerie/index', [ChatController::class, 'show'])->name('messagerie.index');
+Route::post('/chat/send', [ChatController::class, 'send'])->middleware('auth')->name('chat.send');
+Route::get('/chat/messages/{conversation}', [ChatController::class, 'fetchMessages'])->middleware('auth')->name('chat.messages');
 
+// Google OAuth Routes
+Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+
+
+// Facebook OAuth Routes
+Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirect'])
+    ->name('facebook.redirect');
+
+Route::get('/auth/facebook/callback', [FacebookController::class, 'callback'])
+    ->name('facebook.callback');
 
 Route::get('/qrcode', function(){
     return QrCode::size(200)->generate('Hello Mehdi!');
