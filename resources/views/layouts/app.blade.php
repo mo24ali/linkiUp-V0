@@ -20,7 +20,6 @@
 <body class="font-sans antialiased bg-black text-[#e7e9ea]">
     <div class="min-h-screen">
         @include('layouts.navigation')
-
         <!-- Page Heading -->
         @isset($header)
             <header class="bg-black border-b border-[#2f3336] sticky top-0 z-10 backdrop-blur-sm bg-black/95">
