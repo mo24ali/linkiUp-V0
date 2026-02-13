@@ -9,48 +9,31 @@ use App\Http\Controllers\Controller;
 use App\Models\Story;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
+
 class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         // Use optimized friend IDs helper
-        $friendIds = $user->getAcceptedFriendIds();
-        $friendIds[] = $user->id;
+        $friendIds = User::get()->pluck('id');
+        // dd($friendIds);
+        // $friendIdsTab[] = $user->id;
+        // dd($friendIdsTab);
 
+
+        
         $query = Post::where('status', 'published');
 
-        if ($request->filled('search')) {
+        if ($request->filled(key: 'search')) {
             $query->where('content', 'like', '%' . $request->search . '%');
         } else {
             // Show feed from friends and self
             $query->whereIn('owner_id', $friendIds);
         }
 
-        $posts = $query->with([
-            'user.profile',
-            'likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the post
-            'comments' => function ($q) use ($user) {
-                $q->latest()->limit(3)
-                    ->with([
-                        'user.profile',
-                        'replies' => function ($r) use ($user) {
-                            // Eager load reply details
-                            $r->with(['user.profile'])
-                                ->withCount('likes'); // Count likes on replies
-                        },
-                        // Check if current user liked replies
-                        'replies.likes' => function ($r) use ($user) {
-                            $r->where('user_id', $user->id);
-                        }
-                    ])
-                    ->withCount('likes'); // Count likes on comments
-            },
-            'comments.likes' => fn($q) => $q->where('user_id', $user->id), // Check if user liked the comment
-        ])
-            ->withCount(['likes', 'comments'])
-            ->latest()
-            ->paginate(10);
+        $posts = Post::all();
 
         if ($request->ajax()) {
             return view('components.post-list', compact('posts'))->render();
@@ -87,7 +70,7 @@ class PostController extends Controller
 
         foreach ($forbiddenWords as $word) {
             if (stripos($request->content, $word) !== false) {
-                $status = 'pending'; // For moderation
+                $status = 'pending';
                 break;
             }
         }
@@ -114,7 +97,6 @@ class PostController extends Controller
     public function update(Request $request, Post $post)
     {
         $this->authorize('update', $post);
-
         $request->validate([
             'content' => 'required|string',
             'image' => 'nullable|image|max:2048',
@@ -136,8 +118,6 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {
-        $this->authorize('delete', $post);
-
         if ($post->image) {
             Storage::disk('public')->delete($post->image);
         }

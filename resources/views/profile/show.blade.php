@@ -35,6 +35,10 @@
                                 </div>
 
                                 @if(auth()->id() === $user->id)
+                                        
+                                        <button id="showQrBtn">Afficher mon QR d’amitié</button>
+                                        <div id="qrContainer"></div>
+
                                         <a href="{{ route('profile.edit') }}"
                                                 class="mb-2 px-4 py-2 rounded-full border border-[#2f3336] text-[#e7e9ea] font-bold text-sm hover:bg-white/10 transition-colors">
                                                 Edit profile
@@ -130,4 +134,14 @@
                         @include('components.post-list', ['posts' => $user->posts])
                 </div>
         </div>
+
+        <script>
+                document.getElementById('showQrBtn').addEventListener('click', function() {
+                fetch('/my-qr')
+                        .then(response => response.json())
+                        .then(data => {
+                        document.getElementById('qrContainer').innerHTML = data.qr;
+                        });
+                });
+        </script>
 </x-app-layout>
