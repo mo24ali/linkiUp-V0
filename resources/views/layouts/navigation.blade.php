@@ -98,15 +98,8 @@
                             <!-- Authentication -->
                             <form method="POST" action="{{ route('logout') }}" id="logout-form">
                                 @csrf
-<<<<<<< HEAD
                                 <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
                                                     document.getElementById('logout-form').submit();" class="text-sm">
-=======
-                                <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                    this.closest('form').submit();"
-                                    class="text-sm">
->>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
                                     {{ __('Log Out') }}
                                 </x-dropdown-link>
                             </form>
@@ -188,14 +181,8 @@
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}" id="logout-form-mobile">
                     @csrf
-<<<<<<< HEAD
                     <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
                                         document.getElementById('logout-form-mobile').submit();">
-=======
-                    <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault();
-                                        this.closest('form').submit();">
->>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
                 </form>
@@ -203,7 +190,6 @@
         </div>
     </div>
 </nav>
-<<<<<<< HEAD
 <script>
     // Remove beforeunload event when logging out
     document.addEventListener('DOMContentLoaded', function() {
@@ -219,5 +205,3 @@
         });
     });
 </script>
-=======
->>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
