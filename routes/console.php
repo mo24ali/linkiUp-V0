@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use illuminate\Support\Facades\Schedule;
@@ -11,6 +12,8 @@ Artisan::command('tarik', function () {
     $this->comment("rajool");
 })->purpose('Display an inspiring quote');
 
-Schedule::command('welcome',function(){
-    
-})->everySecond();
+
+
+Schedule::command('messages:cleanup')->everyMinute();
+
+

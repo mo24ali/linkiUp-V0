@@ -49,7 +49,7 @@
                     </svg>
                     {{ __('Messages') }}
                 </x-nav-link>
-                @if (Auth::user()->is_admin)
+                @can('acces-admin')
                     <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -57,7 +57,7 @@
                         </svg>
                         {{ __('Admin') }}
                     </x-nav-link>
-                @endif
+                    @endcan
             </div>
 
             <!-- Right Side -->
@@ -96,8 +96,10 @@
                             </x-dropdown-link>
 
                             <!-- Authentication -->
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" id="logout-form">
                                 @csrf
+                                {{-- <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
+                                                    document.getElementById('logout-form').submit();" class="text-sm"> --}}
                                 <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                     this.closest('form').submit();"
@@ -181,8 +183,10 @@
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" id="logout-form-mobile">
                     @csrf
+                    {{-- <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
+                                        document.getElementById('logout-form-mobile').submit();"> --}}
                     <x-responsive-nav-link :href="route('logout')"
                         onclick="event.preventDefault();
                                         this.closest('form').submit();">
@@ -193,3 +197,18 @@
         </div>
     </div>
 </nav>
+<script>
+    // Remove beforeunload event when logging out
+    document.addEventListener('DOMContentLoaded', function() {
+        // Remove any beforeunload listeners that might cause confirmation
+        window.onbeforeunload = null;
+        
+        // Also remove any form change tracking
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                window.onbeforeunload = null;
+            });
+        });
+    });
+</script>

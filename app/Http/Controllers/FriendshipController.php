@@ -14,8 +14,8 @@ class FriendshipController extends Controller
         $user = auth()->user();
         $pendingRequests = \App\Models\Invitation::where('receiver_id', $user->id)->with('sender')->get();
         // Also fetch accepted friends
-        $friends = $user->friends()->wherePivot('status', 'accepted')->get()
-            ->merge($user->friendsOf()->wherePivot('status', 'accepted')->get());
+        $friends = $user->friends()->wherePivot("status", "accepted")->get()
+            ->merge($user->friendsOf()->wherePivot("status", "accepted")->get());
 
         return view('friends.index', compact('pendingRequests', 'friends'));
     }
