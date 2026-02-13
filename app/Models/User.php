@@ -28,6 +28,8 @@ class User extends Authenticatable
         'password',
         'slug',
         'is_admin',
+        'last_seen_at',
+        'is_online',
     ];
 
     /**
@@ -60,6 +62,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_seen_at' => 'datetime',
+            'is_online' => 'boolean',
         ];
     }
 
@@ -144,4 +148,11 @@ class User extends Authenticatable
     //     return $this->hasMany(Invitations::class);
     // }
 
+    /**
+     * Set user as offline (called during logout)
+     */
+    public function setOffline()
+    {
+        $this->update(['is_online' => false]);
+    }
 }
