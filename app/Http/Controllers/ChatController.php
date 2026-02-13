@@ -11,6 +11,7 @@ use App\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class ChatController extends Controller
 {
     public function show()
