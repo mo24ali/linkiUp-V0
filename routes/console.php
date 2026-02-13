@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -9,5 +10,6 @@ Artisan::command('inspire', function () {
 
 
 
+Schedule::command('messages:cleanup')->everyMinute();
 
 
