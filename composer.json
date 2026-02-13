@@ -10,7 +10,11 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^4.1",
+<<<<<<< HEAD
         "pusher/pusher-php-server": "^7.2",
+=======
+        "simplesoftwareio/simple-qrcode": "^4.2",
+>>>>>>> 9cf12b4 (feat: add functionality of the code QR)
         "spatie/laravel-sluggable": "^3.7"
     },
     "require-dev": {

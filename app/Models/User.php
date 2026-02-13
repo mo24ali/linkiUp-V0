@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -85,7 +86,7 @@ class User extends Authenticatable
     public function friends()
     {
         return $this->belongsToMany(User::class, 'friendships', 'user_id', 'friend_id')
-            ->withPivot('status')
+            ->withPivot('accepted')
             ->withTimestamps();
     }
 
@@ -145,6 +146,19 @@ class User extends Authenticatable
     //     return $this->hasMany(Invitations::class);
     // }
 
+<<<<<<< HEAD
     
+=======
+    ##genere code QR
+    // protected static function booted()
+    // {
+    //     static::creating(function ($user){
+    //         $user->qr_token = Str::uuid();
+    //     });
+    // } 
+    ##
+
+
+>>>>>>> 9cf12b4 (feat: add functionality of the code QR)
 
 }

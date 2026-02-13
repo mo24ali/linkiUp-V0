@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
+
 class FriendshipController extends Controller
 {
     public function index()
@@ -104,4 +105,23 @@ class FriendshipController extends Controller
         }
         return back()->with('error', 'Invitation not found.');
     }
+
+    public function addFriendByQr($token){
+        $currentUser = auth()->user(); //celui qui scanne
+        $friend = User::where('qr_token', $token)->first();
+
+        if (!$friend) {
+            return "QR code invalide";
+        }
+
+        if ($currentUser->friend()->where('friend_id', $friend->id)) {
+            return "Vous etes deja amis";
+        }
+
+        //Cree la relation d'amitie
+        $currentUser->friend()->attach($friend->id);
+
+        return "Amitie acceptee automatiquement";
+    }
+   
 }
