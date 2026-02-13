@@ -27,6 +27,9 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        
+        // Set user as online when they log in
+        Auth::user()->update(['is_online' => true]);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -36,6 +39,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Set user as offline before logout
+        if (Auth::check()) {
+            Auth::user()->setOffline();
+        }
+        
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
