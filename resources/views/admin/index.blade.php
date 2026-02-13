@@ -18,6 +18,7 @@
                                 <p class="text-gray-600 dark:text-gray-400">{{ $post->content }}</p>
                             </div>
                             <div class="flex gap-2">
+                                @can('admin-acces')
                                 <form action="{{ route('admin.approve', $post) }}" method="POST">
                                     @csrf
                                     <x-primary-button class="bg-green-600 hover:bg-green-700">Approve</x-primary-button>
@@ -26,6 +27,7 @@
                                     @csrf
                                     <x-danger-button>Reject</x-danger-button>
                                 </form>
+                                @endcan
                             </div>
                         </div>
                     @empty
