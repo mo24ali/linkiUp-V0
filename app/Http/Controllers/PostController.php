@@ -77,7 +77,7 @@ class PostController extends Controller
 
         $postData = [
             'content' => $request->content,
-            'owner_id' => auth()->id(),
+            'owner_id' => Auth::id(),
             'status' => $status,
         ];
 
