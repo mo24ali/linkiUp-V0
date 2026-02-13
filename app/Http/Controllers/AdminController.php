@@ -12,14 +12,11 @@ class AdminController extends Controller
 
     public function index()
     {
-<<<<<<< HEAD
 
    
 
        $pendingPosts = Post::where('status', 'pending')->latest()->get();
-=======
         $pendingPosts = Post::where('status', 'pending')->latest()->get();
->>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
         $flaggedPosts = Post::where('status', 'flagged')->latest()->get();
 
         return view('admin.index', compact('pendingPosts', 'flaggedPosts'));
@@ -27,11 +24,8 @@ class AdminController extends Controller
 
     public function approve(Post $post)
     {
-<<<<<<< HEAD
                  $this->authorize('admin-acces');
 
-=======
->>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
         $post->update(['status' => 'published']);
         return back()->with('success', 'Post approved.');
     }
@@ -41,7 +35,6 @@ class AdminController extends Controller
         $post->delete();
         return back()->with('success', 'Post rejected and deleted.');
     }
-<<<<<<< HEAD
 
     // private function authorizeAdmin()
     // {
@@ -49,6 +42,4 @@ class AdminController extends Controller
     //         abort(403, 'Unauthorized action.');
     //     }
     // }
-=======
->>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
 }
