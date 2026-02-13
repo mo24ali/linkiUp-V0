@@ -11,5 +11,3 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command('messages:cleanup')->everyMinute();
-
-
