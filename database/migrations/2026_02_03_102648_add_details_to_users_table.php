@@ -13,8 +13,7 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             $table->string('firstname')->nullable()->after('name');
             $table->string('lastname')->nullable()->after('firstname');
-            $table->string('slug')->unique()->nullable()->after('email');
-            $table->boolean('is_admin')->default(false)->after('password');
+            
         });
 
         Schema::table('posts', function (Blueprint $table) {

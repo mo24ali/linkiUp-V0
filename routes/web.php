@@ -1,16 +1,29 @@
 <?php
 
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\FacebookController;
+use App\Http\Controllers\MessagerieController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+>>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\AdminController;
+<<<<<<< HEAD
 use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MessagerieController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\UserController;
+=======
+use App\Http\Controllers\QrController;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+>>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
 
 Route::get('/', function () {
     return view('welcome');
@@ -57,9 +70,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/comments/{comment}/react', [ReactionController::class, 'toggleComment'])->name('comments.react');
 });
 
+<<<<<<< HEAD
 // Admin Moderation
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index')->middleware('can:admin-access');
+=======
+    // // Admin Moderation
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index')->middleware('can:acces-admin');
+>>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5
     Route::post('/admin/posts/{post}/approve', [AdminController::class, 'approve'])->name('admin.approve');
     Route::post('/admin/posts/{post}/reject', [AdminController::class, 'reject'])->name('admin.reject');
 });
@@ -92,4 +110,30 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
 });
 
+<<<<<<< HEAD
 require __DIR__.'/auth.php';
+=======
+Route::get('/messagerie/index', [ChatController::class, 'show'])->name('messagerie.index');
+Route::post('/chat/send', [ChatController::class, 'send'])->middleware('auth')->name('chat.send');
+Route::get('/chat/messages/{conversation}', [ChatController::class, 'fetchMessages'])->middleware('auth')->name('chat.messages');
+
+// Google OAuth Routes
+Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+
+
+// Facebook OAuth Routes
+Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirect'])
+    ->name('facebook.redirect');
+
+Route::get('/auth/facebook/callback', [FacebookController::class, 'callback'])
+    ->name('facebook.callback');
+
+Route::get('/qrcode', function(){
+    return QrCode::size(200)->generate('Hello Mehdi!');
+});
+
+
+Route::get('/my_qr', [QrController::class, 'myQr'])->middleware('auth');
+require __DIR__ . '/auth.php';
+>>>>>>> 3eb72ef463e64be5c52cb1e34670dd12a44634f5

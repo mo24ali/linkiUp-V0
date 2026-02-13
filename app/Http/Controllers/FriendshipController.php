@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 
 class FriendshipController extends Controller
 {
@@ -35,7 +37,7 @@ class FriendshipController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('pseudo', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         } else {
@@ -58,7 +60,7 @@ class FriendshipController extends Controller
         }
 
         \App\Models\Invitation::create([
-            'sender_id' => auth()->id(),
+            'sender_id' => Auth::id(),
             'receiver_id' => $id,
             'body' => 'Friend request',
         ]);
@@ -103,4 +105,23 @@ class FriendshipController extends Controller
         }
         return back()->with('error', 'Invitation not found.');
     }
+
+    public function addFriendByQr($token){
+        $currentUser = auth()->user(); //celui qui scanne
+        $friend = User::where('qr_token', $token)->first();
+
+        if (!$friend) {
+            return "QR code invalide";
+        }
+
+        if ($currentUser->friend()->where('friend_id', $friend->id)) {
+            return "Vous etes deja amis";
+        }
+
+        //Cree la relation d'amitie
+        $currentUser->friend()->attach($friend->id);
+
+        return "Amitie acceptee automatiquement";
+    }
+   
 }

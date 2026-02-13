@@ -11,6 +11,7 @@
         "laravel/reverb": "^1.7",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^4.1",
+        "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-sluggable": "^3.7"
     },
     "require-dev": {

@@ -28,8 +28,7 @@ class CommentController extends Controller
 
     public function update(Request $request, Comment $comment)
     {
-        $this->authorize('update', $comment);
-
+        $this->authorize('update', $post);
         $request->validate([
             'content' => 'required|string|max:1000',
         ]);
@@ -41,14 +40,10 @@ class CommentController extends Controller
 
     public function destroy(Comment $comment)
     {
-        $this->authorize('delete', $comment);
+        $this->authorize('update', $post);
         $comment->delete();
 
         return back()->with('success', 'Comment deleted successfully!');
     }
-    public function toggle(Post $post)
-    {
-
-
-    }
+  
 }
