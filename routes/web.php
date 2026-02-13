@@ -12,12 +12,9 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\AdminController;
-<<<<<<< HEAD
 use App\Http\Controllers\ChatController;
-=======
 use App\Http\Controllers\QrController;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
->>>>>>> 9cf12b4 (feat: add functionality of the code QR)
 
 Route::get('/', function () {
     return view('welcome');
@@ -75,9 +72,7 @@ Route::post('/chat/send', [ChatController::class, 'send'])->middleware('auth')->
 Route::get('/chat/messages/{conversation}', [ChatController::class, 'fetchMessages'])->middleware('auth')->name('chat.messages');
 
 
-Route::get('/qrcode', function(){
-    return QrCode::size(200)->generate('Hello Mehdi!');
-});
+Route::get('/qrcode', fn() => QrCode::size(200)->generate('Hello Mehdi!'));
 
 
 Route::get('/my_qr', [QrController::class, 'myQr'])->middleware('auth');

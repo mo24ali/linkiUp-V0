@@ -146,19 +146,6 @@ class User extends Authenticatable
     //     return $this->hasMany(Invitations::class);
     // }
 
-<<<<<<< HEAD
     
-=======
-    ##genere code QR
-    // protected static function booted()
-    // {
-    //     static::creating(function ($user){
-    //         $user->qr_token = Str::uuid();
-    //     });
-    // } 
-    ##
-
-
->>>>>>> 9cf12b4 (feat: add functionality of the code QR)
 
 }
