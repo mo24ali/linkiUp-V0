@@ -11,6 +11,7 @@ use SebastianBergmann\Environment\Console;
 use App\Models\User;
 use App\Models\Conversation;
 
+
 class ChatController extends Controller
 {
 
