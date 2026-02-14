@@ -27,10 +27,4 @@ class Conversation extends Model
     {
         return $this->hasMany(Message::class);
     }
-    public function id(){
-        return Attribute::make(
-            get: fn ($value) => ucfirst($value),
-            set: fn ($value) => strtolower($value)
-        );
-    }
 }

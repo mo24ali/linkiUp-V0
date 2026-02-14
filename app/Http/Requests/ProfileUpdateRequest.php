@@ -29,6 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'bio' => ['nullable', 'string', 'max:1000'],
             'avatar' => ['nullable', 'image', 'max:2048'],
+            'auto_delete_enabled' => ['boolean'],
         ];
     }
 }

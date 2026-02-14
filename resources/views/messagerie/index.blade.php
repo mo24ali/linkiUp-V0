@@ -30,8 +30,8 @@
                         @php
                             $otherUser =
                                 $conversation->sender_id == auth()->id()
-                                    ? $conversation->receiver
-                                    : $conversation->sender;
+                                ? $conversation->receiver
+                                : $conversation->sender;
                         @endphp
                         <li onclick="selectConversation({{ $conversation->id }}, {{ $otherUser->id }}, '{{ $otherUser->name }}')"
                             class="group p-3 rounded-xl hover:bg-[#202327] cursor-pointer transition-all"
@@ -56,6 +56,10 @@
                                             class="font-bold text-[#e7e9ea] truncate group-hover:text-[#1d9bf0] transition-colors">
                                             {{ $otherUser->name }}
                                         </p>
+                                        <span id="unread-{{ $conversation->id }}"
+                                            class="unread-badge {{ $conversation->unread_count > 0 ? '' : 'hidden' }} bg-[#1d9bf0] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">
+                                            {{ $conversation->unread_count > 0 ? $conversation->unread_count : '' }}
+                                        </span>
                                         @if ($conversation->messages->first())
                                             <span class="text-xs text-[#71767b]">
                                                 {{ $conversation->messages->first()->created_at->diffForHumans(null, true, true) }}
@@ -181,6 +185,14 @@
                 <!-- Input Area -->
                 <form id="chat-form" class="p-5 border-t border-[#2f3336] hidden">
                     <div class="flex gap-3">
+                        <input type="file" id="attachment-input" class="hidden" accept="image/*,.pdf,.doc,.docx">
+                        <button type="button" onclick="document.getElementById('attachment-input').click()"
+                            class="text-[#1d9bf0] hover:bg-[#202327] p-2 rounded-full transition-colors">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                        </button>
                         <input id="message-input" type="text"
                             class="flex-1 bg-[#202327] border-none rounded-xl px-5 py-3 text-[#e7e9ea] placeholder-[#71767b] focus:ring-1 focus:ring-[#1d9bf0] text-sm"
                             placeholder="Type a message...">
@@ -194,325 +206,392 @@
 
 
     </div>
-@push('scripts')
-<script type="module">
-    const authId = {{ auth()->id() }};
-    let currentConversationId = null;
-    let currentReceiverId = null;
-    let echoChannel = null;
-    let editingMessageId = null;
+    @push('scripts')
+        <script type="module">
+            const authId = {{ auth()->id() }};
+            let currentConversationId = null;
+            let currentReceiverId = null;
+            let echoChannel = null;
+            let editingMessageId = null;
 
-    const messagesDiv = document.getElementById('messages');
-    const messageInput = document.getElementById('message-input');
-    const chatHeader = document.getElementById('chat-header');
-    const chatUserName = document.getElementById('chat-user-name');
-    const chatAvatar = document.getElementById('chat-avatar');
-    const emptyState = document.getElementById('empty-state');
-    const chatForm = document.getElementById('chat-form');
+            const messagesDiv = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const chatHeader = document.getElementById('chat-header');
+            const chatUserName = document.getElementById('chat-user-name');
+            const chatAvatar = document.getElementById('chat-avatar');
+            const emptyState = document.getElementById('empty-state');
+            const chatForm = document.getElementById('chat-form');
 
-    // ========== RESPONSIVE HELPERS ==========
-    window.showChat = function() {
-        if (window.innerWidth < 768) {
-            document.getElementById('chat-sidebar').classList.add('hidden');
-            document.getElementById('chat-main').classList.remove('hidden');
-        }
-    }
-
-    window.showSidebar = function() {
-        if (window.innerWidth < 768) {
-            document.getElementById('chat-sidebar').classList.remove('hidden');
-            document.getElementById('chat-main').classList.add('hidden');
-        }
-    }
-
-    // ========== SELECT CONVERSATION ==========
-    window.selectConversation = async function(conversationId, receiverId, receiverName) {
-        showChat();
-        currentConversationId = conversationId;
-        currentReceiverId = receiverId;
-        setupChatUI(receiverName, receiverId);
-
-        try {
-            const response = await fetch(`/chat/messages/${conversationId}`);
-            const data = await response.json();
-
-            messagesDiv.innerHTML = '';
-            data.messages.forEach(msg => addMessageToUI(msg));
-            scrollToBottom();
-            subscribeToConversation(conversationId);
-
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-        }
-    }
-
-    // ========== START NEW CHAT ==========
-    window.startNewChat = function(receiverId, receiverName) {
-        showChat();
-        currentConversationId = null;
-        currentReceiverId = receiverId;
-        setupChatUI(receiverName, receiverId);
-        
-        messagesDiv.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-full text-center p-8">
-                <svg class="w-16 h-16 text-[#71767b] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <p class="text-[#e7e9ea] font-medium">Start a conversation with ${receiverName}</p>
-                <p class="text-[#71767b] text-sm mt-2">Say hello! 👋</p>
-            </div>
-        `;
-
-        if (echoChannel) {
-            window.Echo.leave(echoChannel);
-            echoChannel = null;
-        }
-    }
-
-    // ========== SETUP CHAT UI ==========
-    function setupChatUI(name, userId) {
-        chatAvatar.innerHTML = name.charAt(0).toUpperCase();
-        chatUserName.textContent = name;
-        emptyState.classList.add('hidden');
-        chatHeader.classList.remove('hidden');
-        messagesDiv.classList.remove('hidden');
-        chatForm.classList.remove('hidden');
-        messageInput.focus();
-
-        // Highlight selected conversation
-        document.querySelectorAll('[id^="conv-"]').forEach(el => {
-            el.classList.remove('bg-[#202327]', 'border-l-4', 'border-[#1d9bf0]');
-        });
-        if (currentConversationId) {
-            const selectedConv = document.getElementById(`conv-${currentConversationId}`);
-            if (selectedConv) {
-                selectedConv.classList.add('bg-[#202327]', 'border-l-4', 'border-[#1d9bf0]');
-            }
-        }
-    }
-
-    // ========== SUBSCRIBE TO CONVERSATION ==========
-    function subscribeToConversation(conversationId) {
-        if (echoChannel) {
-            window.Echo.leave(echoChannel);
-        }
-
-        echoChannel = `chat.${conversationId}`;
-
-        window.Echo.private(echoChannel)
-            .listen('.message.sent', (e) => {
-                addMessageToUI(e.message);
-                scrollToBottom();
-            })
-            .listen('.message.updated', (e) => {
-                updateMessageInUI(e.id, e.content);
-            })
-            .listen('.message.deleted', (e) => {
-                deleteMessageFromUI(e.message_id);
-            });
-    }
-
-    // ========== ADD MESSAGE TO UI ==========
-    function addMessageToUI(message) {
-        const isOwn = message.sender_id === authId;
-        const div = document.createElement('div');
-        div.className = `flex ${isOwn ? 'justify-end' : 'justify-start'} animate-fadeIn`;
-        div.id = `message-${message.id}`;
-
-        const time = new Date(message.created_at).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        div.innerHTML = `
-            <div class="max-w-[70%] group relative">
-                <div class="rounded-2xl px-5 py-3 ${isOwn ? 'bg-[#1d9bf0] text-white' : 'bg-[#202327] text-[#e7e9ea]'}">
-                    <p class="text-[15px] leading-relaxed message-content">${escapeHtml(message.content)}</p>
-                    <p class="text-[11px] opacity-70 mt-1 ${isOwn ? 'text-right' : 'text-left'}">
-                        ${time}
-                        ${isOwn ? '<span class="ml-1">✓✓</span>' : ''}
-                    </p>
-                </div>
-                ${isOwn ? `
-                    <div class="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <button onclick="editMessage(${message.id}, '${escapeHtml(message.content).replace(/'/g, "\\'")}')" 
-                                class="bg-[#202327] hover:bg-[#2f3336] text-white p-1.5 rounded-full transition-colors" 
-                                title="Modifier">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                        </button>
-                        <button onclick="deleteMessage(${message.id})" 
-                                class="bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full transition-colors" 
-                                title="Supprimer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-
-        messagesDiv.appendChild(div);
-    }
-
-    // ========== EDIT MESSAGE ==========
-    window.editMessage = function(messageId, currentContent) {
-        editingMessageId = messageId;
-        messageInput.value = currentContent;
-        messageInput.focus();
-        messageInput.select();
-
-        // Change le texte du bouton
-        const submitBtn = chatForm.querySelector('button[type="submit"]');
-        submitBtn.textContent = 'Modifier';
-        submitBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
-    }
-
-    // ========== DELETE MESSAGE ==========
-    window.deleteMessage = async function(messageId) {
-        if (!confirm('Voulez-vous vraiment supprimer ce message ?')) return;
-
-        try {
-            const response = await fetch(`/chat/messages/${messageId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            // ========== RESPONSIVE HELPERS ==========
+            window.showChat = function () {
+                if (window.innerWidth < 768) {
+                    document.getElementById('chat-sidebar').classList.add('hidden');
+                    document.getElementById('chat-main').classList.remove('hidden');
                 }
-            });
-
-            const data = await response.json();
-
-            if (data.status === 'deleted') {
-                deleteMessageFromUI(messageId);
             }
-        } catch (error) {
-            console.error('Erreur delete:', error);
-            alert('Erreur lors de la suppression');
-        }
-    }
 
-    // ========== UPDATE MESSAGE IN UI ==========
-    function updateMessageInUI(messageId, newContent) {
-        const messageEl = document.getElementById(`message-${messageId}`);
-        if (messageEl) {
-            const contentEl = messageEl.querySelector('.message-content');
-            if (contentEl) {
-                contentEl.textContent = newContent;
+            window.showSidebar = function () {
+                if (window.innerWidth < 768) {
+                    document.getElementById('chat-sidebar').classList.remove('hidden');
+                    document.getElementById('chat-main').classList.add('hidden');
+                }
             }
-        }
-    }
 
-    // ========== DELETE MESSAGE FROM UI ==========
-    function deleteMessageFromUI(messageId) {
-        const messageEl = document.getElementById(`message-${messageId}`);
-        if (messageEl) {
-            messageEl.style.opacity = '0';
-            messageEl.style.transform = 'scale(0.9)';
-            setTimeout(() => messageEl.remove(), 300);
-        }
-    }
+            // ========== SELECT CONVERSATION ==========
+            window.selectConversation = async function (conversationId, receiverId, receiverName) {
+                showChat();
+                currentConversationId = conversationId;
+                currentReceiverId = receiverId;
+                setupChatUI(receiverName, receiverId);
 
-    // ========== HELPER FUNCTIONS ==========
-    function escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
+                // Immediately hide unread badge
+                const badge = document.getElementById(`unread-${conversationId}`);
+                if (badge) {
+                    badge.classList.add('hidden');
+                    badge.textContent = '';
+                }
 
-    function scrollToBottom() {
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
+                try {
+                    const response = await fetch(`/chat/messages/${conversationId}`);
+                    const data = await response.json();
 
-    // ========== SEND / UPDATE MESSAGE ==========
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const content = messageInput.value.trim();
-        if (!content) return;
+                    messagesDiv.innerHTML = '';
+                    data.messages.forEach(msg => addMessageToUI(msg));
+                    scrollToBottom();
+                    subscribeToConversation(conversationId);
 
-        // MODE ÉDITION
-        if (editingMessageId) {
-            try {
-                const response = await fetch(`/chat/messages/${editingMessageId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ content: content })
+                } catch (error) {
+                    console.error('Error fetching messages:', error);
+                }
+            }
+
+            // ========== START NEW CHAT ==========
+            window.startNewChat = function (receiverId, receiverName) {
+                showChat();
+                currentConversationId = null;
+                currentReceiverId = receiverId;
+                setupChatUI(receiverName, receiverId);
+
+                messagesDiv.innerHTML = `
+                                    <div class="flex flex-col items-center justify-center h-full text-center p-8">
+                                        <svg class="w-16 h-16 text-[#71767b] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        <p class="text-[#e7e9ea] font-medium">Start a conversation with ${receiverName}</p>
+                                        <p class="text-[#71767b] text-sm mt-2">Say hello! 👋</p>
+                                    </div>
+                                `;
+
+                if (echoChannel) {
+                    window.Echo.leave(echoChannel);
+                    echoChannel = null;
+                }
+            }
+
+            // ========== SETUP CHAT UI ==========
+            function setupChatUI(name, userId) {
+                chatAvatar.innerHTML = name.charAt(0).toUpperCase();
+                chatUserName.textContent = name;
+                emptyState.classList.add('hidden');
+                chatHeader.classList.remove('hidden');
+                messagesDiv.classList.remove('hidden');
+                chatForm.classList.remove('hidden');
+                messageInput.focus();
+
+                // Highlight selected conversation
+                document.querySelectorAll('[id^="conv-"]').forEach(el => {
+                    el.classList.remove('bg-[#202327]', 'border-l-4', 'border-[#1d9bf0]');
+                });
+                if (currentConversationId) {
+                    const selectedConv = document.getElementById(`conv-${currentConversationId}`);
+                    if (selectedConv) {
+                        selectedConv.classList.add('bg-[#202327]', 'border-l-4', 'border-[#1d9bf0]');
+                    }
+                }
+            }
+
+            // ========== SUBSCRIBE TO CONVERSATION ==========
+            function subscribeToConversation(conversationId) {
+                if (echoChannel) {
+                    window.Echo.leave(echoChannel);
+                }
+
+                echoChannel = `chat.${conversationId}`;
+
+                window.Echo.private(echoChannel)
+                    .listen('.message.sent', (e) => {
+                        addMessageToUI(e.message);
+                        scrollToBottom();
+                    })
+                    .listen('.message.updated', (e) => {
+                        updateMessageInUI(e.id, e.content);
+                    })
+                    .listen('.message.deleted', (e) => {
+                        deleteMessageFromUI(e.message_id);
+                    });
+            }
+
+            // Subscribe to global user channel for unread counts
+            window.Echo.private(`user.${authId}`)
+                .listen('.unread.updated', (e) => {
+                    updateUnreadBadges(e.conversationCounts);
                 });
 
-                const data = await response.json();
+            function updateUnreadBadges(counts) {
+                // Clear all badges first
+                document.querySelectorAll('.unread-badge').forEach(el => el.classList.add('hidden'));
 
-                if (data.status === 'updated') {
-                    updateMessageInUI(editingMessageId, content);
-                    messageInput.value = '';
-                    editingMessageId = null;
-
-                    // Reset le bouton
-                    const submitBtn = chatForm.querySelector('button[type="submit"]');
-                    submitBtn.textContent = 'Send';
-                    submitBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                // Update specific badges
+                for (const [convId, count] of Object.entries(counts)) {
+                    const badge = document.getElementById(`unread-${convId}`);
+                    if (badge) {
+                        badge.textContent = count;
+                        badge.classList.remove('hidden');
+                    }
                 }
-            } catch (error) {
-                console.error('Erreur update:', error);
             }
-            return;
-        }
 
-        // MODE ENVOI
-        if (!currentReceiverId) return;
+            // ========== ADD MESSAGE TO UI ==========
+            function addMessageToUI(message) {
+                const isOwn = message.sender_id === authId;
+                const div = document.createElement('div');
+                div.className = `flex ${isOwn ? 'justify-end' : 'justify-start'} animate-fadeIn`;
+                div.id = `message-${message.id}`;
 
-        try {
-            const response = await fetch('/chat/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    content: content,
-                    receiver_id: currentReceiverId
-                })
+                const time = new Date(message.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                let attachmentHtml = '';
+                if (message.attachments && message.attachments.length > 0) {
+                    message.attachments.forEach(att => {
+                        if (att.mime_type.startsWith('image/')) {
+                            attachmentHtml += `
+                                                <div class="mt-2">
+                                                    <img src="/storage/${att.path}" alt="${att.filename}" class="max-w-[200px] rounded-lg border border-[#2f3336]">
+                                                </div>
+                                            `;
+                        } else {
+                            attachmentHtml += `
+                                                <div class="mt-2">
+                                                    <a href="/storage/${att.path}" target="_blank" class="flex items-center gap-2 p-2 bg-[#2f3336] rounded-lg text-sm hover:bg-[#3f4346] transition-colors">
+                                                        <svg class="w-5 h-5 text-[#1d9bf0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <span class="truncate max-w-[150px]">${att.filename}</span>
+                                                    </a>
+                                                </div>
+                                            `;
+                        }
+                    });
+                }
+
+                div.innerHTML = `
+                                    <div class="max-w-[70%] group relative">
+                                        <div class="rounded-2xl px-5 py-3 ${isOwn ? 'bg-[#1d9bf0] text-white' : 'bg-[#202327] text-[#e7e9ea]'}">
+                                            <p class="text-[15px] leading-relaxed message-content">${escapeHtml(message.content)}</p>
+                                            ${attachmentHtml}
+                                            <p class="text-[11px] opacity-70 mt-1 ${isOwn ? 'text-right' : 'text-left'}">
+                                                ${time}
+                                                ${isOwn ? '<span class="ml-1">✓✓</span>' : ''}
+                                            </p>
+                                        </div>
+                                        ${isOwn ? `
+                                            <div class="absolute top-0 ${isOwn ? 'left-0 -translate-x-full pr-2' : 'right-0 translate-x-full pl-2'} h-full flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onclick="editMessage(${message.id})" class="p-1 hover:text-[#1d9bf0] text-[#71767b] transition-colors" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <button onclick="deleteMessage(${message.id})" class="p-1 hover:text-red-500 text-[#71767b] transition-colors" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;
+
+                messagesDiv.appendChild(div);
+            }
+
+            // ========== EDIT MESSAGE ==========
+            window.editMessage = function (messageId) {
+                editingMessageId = messageId;
+
+                // Retrieve content from DOM to avoid escaping issues
+                const messageEl = document.getElementById(`message-${messageId}`);
+                if (messageEl) {
+                    const contentEl = messageEl.querySelector('.message-content');
+                    if (contentEl) {
+                        messageInput.value = contentEl.textContent;
+                    }
+                }
+
+                messageInput.focus();
+                // messageInput.select(); // Optional style choice
+
+                // Change le texte du bouton
+                const submitBtn = chatForm.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Update';
+                submitBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+            }
+
+            // ========== DELETE MESSAGE ==========
+            window.deleteMessage = async function (messageId) {
+                if (!confirm('Voulez-vous vraiment supprimer ce message ?')) return;
+
+                try {
+                    const response = await fetch(`/chat/messages/${messageId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'deleted') {
+                        deleteMessageFromUI(messageId);
+                    }
+                } catch (error) {
+                    console.error('Erreur delete:', error);
+                    alert('Erreur lors de la suppression');
+                }
+            }
+
+            // ========== UPDATE MESSAGE IN UI ==========
+            function updateMessageInUI(messageId, newContent) {
+                const messageEl = document.getElementById(`message-${messageId}`);
+                if (messageEl) {
+                    const contentEl = messageEl.querySelector('.message-content');
+                    if (contentEl) {
+                        contentEl.textContent = newContent;
+                    }
+                }
+            }
+
+            // ========== DELETE MESSAGE FROM UI ==========
+            function deleteMessageFromUI(messageId) {
+                const messageEl = document.getElementById(`message-${messageId}`);
+                if (messageEl) {
+                    messageEl.style.opacity = '0';
+                    messageEl.style.transform = 'scale(0.9)';
+                    setTimeout(() => messageEl.remove(), 300);
+                }
+            }
+
+            // ========== HELPER FUNCTIONS ==========
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            function scrollToBottom() {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            // ========== SEND / UPDATE MESSAGE ==========
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const content = messageInput.value.trim();
+                const fileInput = document.getElementById('attachment-input');
+                const file = fileInput ? fileInput.files[0] : null;
+
+                if (!content && !file) return;
+
+                // MODE ÉDITION
+                if (editingMessageId) {
+                    try {
+                        const response = await fetch(`/chat/messages/${editingMessageId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'X-Socket-ID': window.Echo.socketId()
+                            },
+                            body: JSON.stringify({ content: content })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.status === 'updated') {
+                            updateMessageInUI(editingMessageId, data.message.content);
+                            resetForm();
+                        }
+                    } catch (err) {
+                        console.error('Update error:', err);
+                        alert('Erreur lors de la modification');
+                    }
+                    return;
+                }
+
+                // MODE ENVOI
+                if (!currentReceiverId) return;
+
+                const formData = new FormData();
+                formData.append('content', content);
+                formData.append('receiver_id', currentReceiverId);
+                if (file) {
+                    formData.append('attachment', file);
+                }
+
+                // Clear input immediately as requested
+                messageInput.value = '';
+                if (fileInput) fileInput.value = ''; // Reset file input
+
+                try {
+                    const response = await fetch('/chat/send', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'X-Socket-ID': window.Echo.socketId()
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        addMessageToUI(data.message);
+                        scrollToBottom();
+                    }
+                } catch (err) {
+                    console.error('Send error:', err);
+                    // Optionally restore the message input here if sending fails
+                    // messageInput.value = content; 
+                }
             });
 
-            const data = await response.json();
-
-            if (data.status === 'success') {
+            function resetForm() {
+                editingMessageId = null;
                 messageInput.value = '';
-                addMessageToUI(data.message);
-                scrollToBottom();
-
-                if (!currentConversationId && data.conversation_id) {
-                    currentConversationId = data.conversation_id;
-                    subscribeToConversation(currentConversationId);
-                    setTimeout(() => location.reload(), 1000);
-                }
+                const submitBtn = chatForm.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Send';
+                submitBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
             }
-        } catch (err) {
-            console.error('Send error:', err);
-        }
-    });
 
-    // ========== ANIMATION STYLE ==========
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-            animation: fadeIn 0.3s ease-out;
-        }
-        #message-${'{'}id{'}'} {
-            transition: opacity 0.3s, transform 0.3s;
-        }
-    `;
-    document.head.appendChild(style);
-</script>
-@endpush
+            // ========== ANIMATION STYLE ==========
+            const style = document.createElement('style');
+            style.textContent = `
+                                @keyframes fadeIn {
+                                    from { opacity: 0; transform: translateY(10px); }
+                                    to { opacity: 1; transform: translateY(0); }
+                                }
+                                .animate-fadeIn {
+                                    animation: fadeIn 0.3s ease-out;
+                                }
+                                #message-${'{'}id{'}'} {
+                                    transition: opacity 0.3s, transform 0.3s;
+                                }
+                            `;
+            document.head.appendChild(style);
+        </script>
+    @endpush
 </x-app-layout>
