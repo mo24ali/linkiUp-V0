@@ -3,24 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageEvent;
+use App\Events\MessageUpdated;
+use App\Events\MessageDeleted;
 use App\Models\Message;
-use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use SebastianBergmann\Environment\Console;
 use App\Models\User;
 use App\Models\Conversation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class ChatController extends Controller
 {
-
-
     public function show()
     {
         $userId = Auth::id();
 
-        //Get all users except current user
-        $onlineUsers = User::where('id', '!=', $userId)->get(); // basic implementation for now
+        // Get all users except current user
+        $onlineUsers = User::where('id', '!=', $userId)->get();
 
         // Get conversations where the auth user is sender or receiver
         $conversations = Conversation::where('sender_id', $userId)
@@ -29,7 +28,6 @@ class ChatController extends Controller
                 'sender',
                 'receiver',
                 'messages' => function ($query) {
-                    //eager load only the latest message
                     $query->latest()->limit(1);
                 }
             ])
@@ -42,7 +40,7 @@ class ChatController extends Controller
     {
         try {
             $request->validate([
-                'content' => 'required|string',
+                'content' => 'required|string|max:1000',
                 'receiver_id' => 'required|exists:users,id'
             ]);
         } catch (\Exception $e) {
@@ -54,10 +52,10 @@ class ChatController extends Controller
 
         // Check for existing conversation (order agnostic)
         $conversation = Conversation::where(function ($q) use ($senderId, $receiverId) {
-            $q->where('sender_id', $senderId)->where('receiver_id', $receiverId);
-        })->orWhere(function ($q) use ($senderId, $receiverId) {
-            $q->where('sender_id', $receiverId)->where('receiver_id', $senderId);
-        })->first();
+            $q->where('sender_id', $senderId)->where('receiver_id', $receiverId);})
+                ->orWhere(function ($q) use ($senderId, $receiverId) {
+            $q->where('sender_id', $receiverId)->where('receiver_id', $senderId);})
+                ->first();
 
         // Create if not exists
         if (!$conversation) {
@@ -74,7 +72,7 @@ class ChatController extends Controller
             'content' => $request->input('content'),
         ]);
 
-        event(new MessageEvent($message))->toOthers();
+        broadcast(new MessageEvent($message))->toOthers();
 
         return response()->json([
             'status' => 'success',
@@ -82,25 +80,61 @@ class ChatController extends Controller
             'conversation_id' => $conversation->id
         ]);
     }
-    public function markAsRead(Conversation $conversation)
-    {
-        Message::where('conversation_id', $conversation->id())
-            ->where('receiver_id', Auth::id())
-            ->whereNull('read_at')
-            ->update(['read_at' => true]);
-    }
+
     public function fetchMessages(Conversation $conversation)
     {
-        // Check authorization
         $userId = Auth::id();
+        
+        // Check authorization
         if ($userId !== $conversation->sender_id && $userId !== $conversation->receiver_id) {
             abort(403);
         }
 
         $messages = $conversation->messages()->with('sender')->get();
-        // $this->markAsRead($conversation);
+
         return response()->json([
             'messages' => $messages
+        ]);
+    }
+
+    public function update(Request $request, Message $message)
+    {
+            if ($message->sender_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        $message->update([
+            'content' => $request->content,
+        ]);
+
+        broadcast(new MessageUpdated($message))->toOthers();
+
+        return response()->json([
+            'status' => 'updated',
+            'message' => $message
+        ]);
+    }
+
+    public function destroy(Message $message)
+    {
+        if ($message->sender_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $messageId = $message->id;
+        $conversationId = $message->conversation_id;
+
+        $message->delete();
+
+        broadcast(new MessageDeleted($messageId, $conversationId))->toOthers();
+
+        return response()->json([
+            'status' => 'deleted',
+            'message_id' => $messageId
         ]);
     }
 }
