@@ -192,5 +192,46 @@ class FriendshipController extends Controller
         return back()->with('success', 'Amitié acceptée automatiquement !');
     }
 
+
+    public function acceptFriend($slug)
+    {
+        $currentUser = auth()->user();
+
+        // Trouver l'utilisateur via slug
+        $friend = User::where('slug', $slug)->first();
+
+        if (!$friend) {
+            return back()->with('error', 'Lien invalide.');
+        }
+
+        // Empêcher auto-ajout connu
+        if ($friend->id === $currentUser->id) {
+            return back()->with('error', 'Vous ne pouvez pas devenir ami avec vous-même.');
+        }
+
+        // Sécuriser ordre pour pivot
+        $user1Id = min($currentUser->id, $friend->id);
+        $user2Id = max($currentUser->id, $friend->id);
+
+        // Vérifier si amitié existe déjà
+        $exists = User::find($user1Id)
+            ->friends()
+            ->where('friend_id', $user2Id)
+            ->exists();
+
+        if (!$exists) {
+            User::find($user1Id)
+                ->friends()
+                ->attach($user2Id, [
+                    'status' => 'accepted',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+        }
+
+        return back()->with('success', 'Amitié acceptée automatiquement !');
+    }
+
+
    
 }

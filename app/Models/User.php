@@ -164,6 +164,17 @@ class User extends Authenticatable
     {
         $this->update(['is_online' => false]);
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (!$user->slug) {
+                $user->slug = Str::slug($user->name . '-' . Str::random(6));
+            }
+        });
+    }
 }
 ##genere code QR
 // protected static function booted()
