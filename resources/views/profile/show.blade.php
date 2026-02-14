@@ -36,6 +36,14 @@
 
                                 @if(auth()->id() === $user->id)
                                         
+                                        <a href="{{ route('profile.invite') }}" class="btn btn-primary">
+                                        Générer lien d’invitation
+                                        </a>
+
+                                        @if(isset($link))
+                                        <p>Lien (valide 1h) : <a href="{{ $link }}">{{ $link }}</a></p>
+                                        @endif
+                                        
                                         <button id="showQrBtn">Afficher mon QR d’amitié</button>
                                         <div id="qrContainer"></div>
 

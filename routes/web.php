@@ -113,4 +113,11 @@ Route::get('/my-qr', [QrController::class, 'myQr'])->middleware('auth');
 
 Route::get('add-friend/{token}', [FriendshipController::class, 'addFriend'])->middleware('auth');
 
+Route::get('/profile/invite', [UserController::class, 'generateInvite'])
+    ->name('profile.invite');
+
+Route::get('/friend/accept/{slug}', [UserController::class, 'acceptFriend'])
+    ->name('friend.accept')
+    ->middleware('signed');
+
 require __DIR__ . '/auth.php';

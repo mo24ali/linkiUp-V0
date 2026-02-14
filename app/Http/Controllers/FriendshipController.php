@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\URL;
+use Carbon\Carbon;
 
 class FriendshipController extends Controller
 {
@@ -190,6 +191,24 @@ class FriendshipController extends Controller
         }
 
         return back()->with('success', 'Amitié acceptée automatiquement !');
+    }
+
+    public function generateInvite()
+    {
+        $user = auth()->user();
+
+        // lien temporaire pour 1h
+        $link = URL::temporarySignedRoute(
+            'friend.accept',
+            now()->addHour(),
+            ['slug' => $user->slug] // le slug de l'utilisateur
+        );
+
+        return view('profile', compact('link'));
+    }
+
+    public function addFriendBySlug(){
+
     }
 
    
