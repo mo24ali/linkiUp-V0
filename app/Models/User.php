@@ -172,7 +172,7 @@ class User extends Authenticatable
                 $user->slug = Str::slug($user->name . '-' . Str::random(6));
             }
         });
-}
+    }
 }
     ##genere code QR
     // protected static function booted()

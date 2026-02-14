@@ -35,24 +35,55 @@
                                 </div>
 
                                 @if(auth()->id() === $user->id)
-                                        
-                                        <a href="{{ route('profile.invite') }}" class="btn btn-primary">
+
+                                <div class="flex flex-col gap-3">
+
+                                        <a href="{{ route('profile.invite') }}" 
+                                        class="btn btn-primary text-center">
                                         Générer lien d’invitation
                                         </a>
 
-                                        @if(isset($link))
-                                        <p>Lien (valide 1h) : <a href="{{ $link }}">{{ $link }}</a></p>
-                                        @endif
-                                        
-                                        <button id="showQrBtn">Afficher mon QR d’amitié</button>
+                                        <button id="showQrBtn" 
+                                        class="px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
+                                        Afficher mon QR d’amitié
+                                        </button>
+
                                         <div id="qrContainer"></div>
 
                                         <a href="{{ route('profile.edit') }}"
-                                                class="mb-2 px-4 py-2 rounded-full border border-[#2f3336] text-[#e7e9ea] font-bold text-sm hover:bg-white/10 transition-colors">
-                                                Edit profile
+                                        class="px-4 py-2 rounded-full border border-[#2f3336] text-[#e7e9ea] font-bold text-sm hover:bg-white/10 transition-colors text-center">
+                                        Edit profile
                                         </a>
+
+                                        {{-- 🔥 Carte d'affichage du lien --}}
+                                        @if(isset($link))
+                                        <div class="mt-4 p-4 rounded-2xl bg-[#16181c] border border-[#2f3336] shadow-lg">
+                                                
+                                                <p class="text-sm text-gray-400 mb-2">
+                                                🔗 Lien d’invitation (valide 1h)
+                                                </p>
+
+                                                <div class="flex items-center justify-between bg-black/40 px-3 py-2 rounded-lg">
+                                                <span class="text-sm text-blue-400 truncate">
+                                                        {{ $link }}
+                                                </span>
+
+                                                <button onclick="navigator.clipboard.writeText('{{ $link }}')"
+                                                        class="ml-3 text-xs px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                                                        Copier
+                                                </button>
+                                                </div>
+
+                                        </div>
+                                        @endif
+
+                                </div>
+
                                 @else
+
+
                                         <div class="mb-2">
+                                               
                                                 @php
                                                         $isFriend = auth()->user()->friends()->where('friend_id', $user->id)->exists() || auth()->user()->friendsOf()->where('user_id', $user->id)->exists();
                                                         $sentRequest = auth()->user()->sentFriendRequests()->where('receiver_id', $user->id)->exists();

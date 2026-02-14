@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\URL;
-use Carbon\Carbon;
+
 
 class FriendshipController extends Controller
 {
@@ -193,23 +192,46 @@ class FriendshipController extends Controller
         return back()->with('success', 'Amitié acceptée automatiquement !');
     }
 
-    public function generateInvite()
+
+    public function acceptFriend($slug)
     {
-        $user = auth()->user();
+        $currentUser = auth()->user();
 
-        // lien temporaire pour 1h
-        $link = URL::temporarySignedRoute(
-            'friend.accept',
-            now()->addHour(),
-            ['slug' => $user->slug] // le slug de l'utilisateur
-        );
+        // Trouver l'utilisateur via slug
+        $friend = User::where('slug', $slug)->first();
 
-        return view('profile', compact('link'));
+        if (!$friend) {
+            return back()->with('error', 'Lien invalide.');
+        }
+
+        // Empêcher auto-ajout connu
+        if ($friend->id === $currentUser->id) {
+            return back()->with('error', 'Vous ne pouvez pas devenir ami avec vous-même.');
+        }
+
+        // Sécuriser ordre pour pivot
+        $user1Id = min($currentUser->id, $friend->id);
+        $user2Id = max($currentUser->id, $friend->id);
+
+        // Vérifier si amitié existe déjà
+        $exists = User::find($user1Id)
+            ->friends()
+            ->where('friend_id', $user2Id)
+            ->exists();
+
+        if (!$exists) {
+            User::find($user1Id)
+                ->friends()
+                ->attach($user2Id, [
+                    'status' => 'accepted',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+        }
+
+        return back()->with('success', 'Amitié acceptée automatiquement !');
     }
 
-    public function addFriendBySlug(){
-
-    }
 
    
 }
