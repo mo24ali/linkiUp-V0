@@ -8,6 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-
+Schedule::job(new \App\Jobs\AutoDeleteMessages)->hourly();
 
 Schedule::command('messages:cleanup')->everyMinute();

@@ -115,6 +115,16 @@
             @endif
         </div>
 
+        <!-- Auto Delete Messages -->
+        <div class="flex items-center gap-2">
+            <input id="auto_delete_enabled" name="auto_delete_enabled" type="checkbox" value="1"
+                class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:bg-gray-900"
+                {{ old('auto_delete_enabled', $user->auto_delete_enabled) ? 'checked' : '' }}>
+            <label for="auto_delete_enabled" class="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                {{ __('Enable 24-hour Auto Delete Messages') }}
+            </label>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

@@ -50,7 +50,7 @@
                 <div id="post-edit-{{ $post->id }}" class="hidden mt-2">
                     <form action="{{ route('posts.update', $post->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        @method('PATCH')
+                        @method('PUT')
                         <textarea name="content" class="w-full bg-[#15181c] border-[#2f3336] rounded-xl text-white text-sm focus:ring-[#1d9bf0]" rows="3">{{ $post->content }}</textarea>
                         <div class="flex justify-end gap-2 mt-2">
                             <button type="button" onclick="cancelEditPost({{ $post->id }})" class="text-xs text-[#71767b] hover:underline">Cancel</button>

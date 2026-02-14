@@ -32,6 +32,7 @@ class User extends Authenticatable
         'is_admin',
         'last_seen_at',
         'is_online',
+        'auto_delete_enabled',
     ];
 
     /**
@@ -66,6 +67,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'last_seen_at' => 'datetime',
             'is_online' => 'boolean',
+            'auto_delete_enabled' => 'boolean',
         ];
     }
 
@@ -94,7 +96,7 @@ class User extends Authenticatable
             'friendships',
             'user_id',
             'friend_id'
-            )
+        )
             ->withPivot('status')
             ->withTimestamps();
     }
@@ -174,14 +176,14 @@ class User extends Authenticatable
         });
     }
 }
-    ##genere code QR
-    // protected static function booted()
-    // {
-    //     static::creating(function ($user){
-    //         $user->qr_token = Str::uuid();
-    //     });
-    // } 
-    ##
+##genere code QR
+// protected static function booted()
+// {
+//     static::creating(function ($user){
+//         $user->qr_token = Str::uuid();
+//     });
+// } 
+##
 
 
 
