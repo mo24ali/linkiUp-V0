@@ -23,7 +23,7 @@ class PostController extends Controller
         // dd($friendIdsTab);
 
 
-        
+
         $query = Post::where('status', 'published');
 
         if ($request->filled(key: 'search')) {
@@ -33,7 +33,7 @@ class PostController extends Controller
             $query->whereIn('owner_id', $friendIds);
         }
 
-        $posts = Post::all();
+        $posts = $query->latest()->paginate(10);
 
         if ($request->ajax()) {
             return view('components.post-list', compact('posts'))->render();
