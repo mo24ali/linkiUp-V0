@@ -14,15 +14,25 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\FacebookController;
+use App\Http\Controllers\GenerateInviteController;
 use App\Http\Controllers\QrController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+    });
+    
+    Route::get('/dashboard', [PostController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+    
+    Route::middleware('auth')->group(function () {
+    //Code QR
+    Route::get('/my-qr', [QrController::class, 'myQr']);
 
-Route::get('/dashboard', [PostController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+    //lien (Slug)
+    Route::get('/profile/invite', [GenerateInviteController::class, 'generateInvite'])->name('profile.invite');
 
-Route::middleware('auth')->group(function () {
+    //Profile
+    Route::get('add-friend/{token}', [FriendshipController::class, 'addFriend']);
+    Route::get('/friend/accept/{slug}', [FriendshipController::class, 'acceptFriend'])->name('friend.accept')->middleware('signed');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -109,15 +119,6 @@ Route::get('/auth/facebook/redirect', [FacebookController::class, 'redirect'])->
 Route::get('/auth/facebook/callback', [FacebookController::class, 'callback'])->name('facebook.callback');
 
 
-Route::get('/my-qr', [QrController::class, 'myQr'])->middleware('auth');
 
-Route::get('add-friend/{token}', [FriendshipController::class, 'addFriend'])->middleware('auth');
-
-Route::get('/profile/invite', [UserController::class, 'generateInvite'])
-    ->name('profile.invite');
-
-Route::get('/friend/accept/{slug}', [UserController::class, 'acceptFriend'])
-    ->name('friend.accept')
-    ->middleware('signed');
 
 require __DIR__ . '/auth.php';
