@@ -25,7 +25,8 @@
                         <a href="{{ route('messagerie.index') }}" class="flex-1 py-2 rounded-xl bg-[#2f3336] hover:bg-[#1d9bf0] text-white text-xs font-bold transition-all flex items-center justify-center">
                             Message
                         </a>
-                        <button
+                        <button wire:click="removeFriend({{$friend->id}})"
+                            onclick="confirm('Delete this friend ? ')"
                             class="p-2 rounded-xl bg-[#f91880]/10 text-[#f91880] hover:bg-[#f91880] hover:text-white transition-all border border-[#f91880]/20">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

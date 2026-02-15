@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Invitation;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -12,7 +13,7 @@ class FriendshipController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $pendingRequests = \App\Models\Invitation::where('receiver_id', $user->id)->with('sender')->get();
+        $pendingRequests = Invitation::where('receiver_id', $user->id)->with('sender')->get();
         // Also fetch accepted friends
         $friends = $user->friends()->wherePivot('status', 'accepted')->get()
             ->merge($user->friendsOf()->wherePivot('status', 'accepted')->get());
@@ -59,7 +60,7 @@ class FriendshipController extends Controller
             return back()->with('error', 'Already invited.');
         }
 
-        \App\Models\Invitation::create([
+        Invitation::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $id,
             'body' => 'Friend request',
@@ -78,13 +79,13 @@ class FriendshipController extends Controller
         $currentUser = auth()->user();
 
         // Récupérer l'invitation
-        $invitation = \App\Models\Invitation::where('sender_id', $id)
+        $invitation = Invitation::where('sender_id', $id)
             ->where('receiver_id', $currentUser->id)
             ->first();
 
         if (!$invitation) {
             // Optionnel : essayer de trouver par invitation ID
-            $invitation = \App\Models\Invitation::find($id);
+            $invitation = Invitation::find($id);
         }
 
         if ($invitation && $invitation->receiver_id == $currentUser->id) {
@@ -95,14 +96,14 @@ class FriendshipController extends Controller
             $user2Id = max($sender->id, $currentUser->id);
 
             // Vérifier si l'amitié existe déjà
-            $exists = \App\Models\User::find($user1Id)
+            $exists = User::find($user1Id)
                 ->friends()
                 ->where('friend_id', $user2Id)
                 ->exists();
 
             if (!$exists) {
                 // Créer l'amitié avec Eloquent
-                \App\Models\User::find($user1Id)
+                User::find($user1Id)
                     ->friends()
                     ->attach($user2Id, [
                         'status' => 'accepted',
@@ -122,9 +123,9 @@ class FriendshipController extends Controller
 
     public function reject($id)
     {
-        $invitation = \App\Models\Invitation::where('sender_id', $id)->where('receiver_id', auth()->id())->first();
+        $invitation = Invitation::where('sender_id', $id)->where('receiver_id', auth()->id())->first();
         if (!$invitation) {
-            $invitation = \App\Models\Invitation::find($id);
+            $invitation = Invitation::find($id);
         }
 
         if ($invitation && $invitation->receiver_id == auth()->id()) {
@@ -158,7 +159,7 @@ class FriendshipController extends Controller
         $currentUser = auth()->user();
 
         // Trouver le user correspondant au token
-        $friend = \App\Models\User::where('qr_token', $token)->first();
+        $friend = User::where('qr_token', $token)->first();
 
         if (!$friend) {
             return back()->with('error', 'QR code invalide.');

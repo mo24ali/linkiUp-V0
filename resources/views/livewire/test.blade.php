@@ -58,15 +58,25 @@
                         </h3>
                         <p class="text-xs text-[#71767b] mb-4">{{ '@' . $user->username }}</p>
 
-                        <form action="{{ route('friends.add', $user->id) }}" method="POST" class="w-full">
-                            @csrf
-                            <button class="w-full py-2.5 bg-[#e7e9ea] text-[#0f1419] rounded-xl text-sm font-bold hover:bg-[#d7d9d9] transition-all flex items-center justify-center">
+                        @if($this->hasSentRequest($user->id))
+                            <button
+                                type="button"
+                                wire:click="cancelRequest({{ $user->id }})"
+                                class="w-full py-2.5 bg-[#2f3336] text-white rounded-xl text-sm font-bold hover:bg-[#f91880] transition-all flex items-center justify-center">
+                                Cancel Request
+                            </button>
+                        @else
+                            <button
+                                type="button"
+                                wire:click="addFriend({{ $user->id }})"
+                                class="w-full py-2.5 bg-[#e7e9ea] text-[#0f1419] rounded-xl text-sm font-bold hover:bg-[#d7d9d9] transition-all flex items-center justify-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 Add Friend
                             </button>
-                        </form>
+                        @endif
+                        
                     </div>
                 @empty
                     <div class="col-span-full">
