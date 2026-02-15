@@ -58,25 +58,41 @@
                         </h3>
                         <p class="text-xs text-[#71767b] mb-4">{{ '@' . $user->username }}</p>
 
-                        @if($this->hasSentRequest($user->id))
+                    @if($this->isFriend($user->id))
+                        <button type="button" class="w-full py-2.5 bg-[#2f3336] text-white rounded-xl text-sm font-bold" disabled>
+                            Friend
+                        </button>
+
+                    @elseif($this->hasIncomingRequest($user->id))
+                        <div class="flex gap-2 w-full">
                             <button
                                 type="button"
-                                wire:click="cancelRequest({{ $user->id }})"
-                                class="w-full py-2.5 bg-[#2f3336] text-white rounded-xl text-sm font-bold hover:bg-[#f91880] transition-all flex items-center justify-center">
-                                Cancel Request
+                                wire:click="acceptIncoming({{ $user->id }})"
+                                class="flex-1 py-2.5 bg-[#1d9bf0] text-white rounded-xl text-sm font-bold">
+                                Accept
                             </button>
-                        @else
+                    
                             <button
                                 type="button"
-                                wire:click="addFriend({{ $user->id }})"
-                                class="w-full py-2.5 bg-[#e7e9ea] text-[#0f1419] rounded-xl text-sm font-bold hover:bg-[#d7d9d9] transition-all flex items-center justify-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Add Friend
+                                wire:click="rejectIncoming({{ $user->id }})"
+                                class="flex-1 py-2.5 bg-[#2f3336] text-white rounded-xl text-sm font-bold">
+                                Reject
                             </button>
-                        @endif
-                        
+                        </div>
+                    
+
+                    @elseif($this->hasSentRequest($user->id))
+                        <button type="button" wire:click="cancelRequest({{ $user->id }})" class="w-full py-2.5 bg-[#f91880] text-white rounded-xl text-sm font-bold border ">
+                            Cancel Request
+                        </button>
+
+                    @else
+                        <button type="button" wire:click="addFriend({{ $user->id }})" class="w-full py-2.5 bg-[#e7e9ea] text-[#0f1419] rounded-xl text-sm font-bold">
+                            Add Friend
+                        </button>
+                    @endif
+
+
                     </div>
                 @empty
                     <div class="col-span-full">

@@ -56,7 +56,7 @@ class FriendshipController extends Controller
             return back();
 
         // Check loops
-        if (\App\Models\Invitation::where('sender_id', auth()->id())->where('receiver_id', $id)->exists()) {
+        if (Invitation::where('sender_id', auth()->id())->where('receiver_id', $id)->exists()) {
             return back()->with('error', 'Already invited.');
         }
 
